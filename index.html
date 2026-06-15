@@ -1907,7 +1907,19 @@ async function submitAuth(){
     }
     await onAuthSuccess();
   }catch(e){
-    showAuthErr(e.message||'Something went wrong. Please try again.');
+    // Network / offline error — check if we have a cached session to fall back to
+    const isOffline=!navigator.onLine||e.message==='Failed to fetch'||e.name==='TypeError';
+    if(isOffline){
+      const cached=localStorage.getItem('stv5');
+      if(cached){
+        showAuthErr('You appear to be offline. Loading your locally cached data…');
+        await loadOfflineFallback();
+      }else{
+        showAuthErr('No internet connection. Connect to sign in for the first time.');
+      }
+    }else{
+      showAuthErr(e.message||'Something went wrong. Please try again.');
+    }
   }finally{
     document.getElementById('authLoading').classList.remove('on');
     document.getElementById('authSubmitBtn').disabled=false;
@@ -2013,17 +2025,40 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&formOpen&&!['BUTTON','SELECT','TEXTAREA','INPUT'].includes(document.activeElement.tagName)) addShipment();
 });
 
+// Offline fallback — load last-cached data from localStorage and enter the app
+// without hitting Supabase. Changes made while offline are written to localStorage
+// and will sync to Supabase next time save() is called with a live connection.
+async function loadOfflineFallback(){
+  DB=JSON.parse(localStorage.getItem('stv5')||'null')||[];
+  WH=JSON.parse(localStorage.getItem('wh1')||'null')||[];
+  geoCache=JSON.parse(localStorage.getItem('geoCache5')||'{}');
+  // Try to get the stored email from the last Supabase session object
+  try{
+    const raw=Object.entries(localStorage).find(([k])=>k.startsWith('sb-')&&k.includes('-auth-token'));
+    if(raw){
+      const parsed=JSON.parse(raw[1]);
+      const email=parsed?.user?.email||'Offline';
+      document.getElementById('userEmail').textContent=email+' (offline)';
+    }else{
+      document.getElementById('userEmail').textContent='Offline mode';
+    }
+  }catch{ document.getElementById('userEmail').textContent='Offline mode'; }
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('appShell').classList.add('on');
+  toast('Offline — showing cached data. Changes will sync when reconnected.');
+  updateStats(); renderCharts();
+}
+
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
 window.addEventListener('load',async ()=>{
-  // Register PWA service worker (only over https / localhost — required for SW)
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('service-worker.js').catch(()=>{/* offline-cache unavailable, app still works online */});
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
   }
 
   if(!sb){
-    // No backend configured — run fully local (original behaviour), skip login screen
+    // No backend configured — run fully local, skip login
     DB=JSON.parse(localStorage.getItem('stv5')||'null')||seed();
     WH=JSON.parse(localStorage.getItem('wh1')||'null')||seedWH();
     geoCache=JSON.parse(localStorage.getItem('geoCache5')||'{}');
@@ -2034,17 +2069,50 @@ window.addEventListener('load',async ()=>{
     return;
   }
 
-  // Check for existing session
-  const {data:{session}}=await sb.auth.getSession();
-  if(session){
-    await onAuthSuccess();
+  // If offline but we have cached data + a stored session token → skip auth screen
+  if(!navigator.onLine){
+    const hasCache=!!localStorage.getItem('stv5');
+    const hasSession=Object.keys(localStorage).some(k=>k.startsWith('sb-')&&k.includes('-auth-token'));
+    if(hasCache&&hasSession){
+      await loadOfflineFallback();
+      return;
+    }
+    // No cache — show login with offline message
+    showAuthErr('You are offline. Connect to the internet to sign in.');
+    return;
   }
 
-  // Keep UI in sync with auth state changes (e.g. token refresh, sign-out in another tab)
+  // Online — check for existing Supabase session
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(session){
+      await onAuthSuccess();
+    }
+  }catch(e){
+    // getSession itself failed (network blip at load time) — try local cache
+    if(localStorage.getItem('stv5')) await loadOfflineFallback();
+  }
+
+  // Keep UI in sync with auth state changes
   sb.auth.onAuthStateChange((event,session)=>{
     if(event==='SIGNED_OUT'){
       document.getElementById('appShell').classList.remove('on');
       document.getElementById('authScreen').classList.remove('hidden');
+    }
+    // When connection restored and token refreshed, re-sync data
+    if(event==='TOKEN_REFRESHED'&&currentOrgId){
+      loadData().then(()=>refresh()).catch(()=>{});
+    }
+  });
+
+  // When device comes back online, sync any offline changes
+  window.addEventListener('online',async ()=>{
+    if(currentOrgId){
+      toast('Back online — syncing…');
+      await save(); await saveWH();
+      await loadData();
+      refresh();
+      toast('Synced.');
     }
   });
 });
