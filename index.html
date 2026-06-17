@@ -715,33 +715,6 @@ async function saveWH() {
 }
 
 // ═══════════════════════════════════════════════
-// DATA
-// ═══════════════════════════════════════════════
-function seed() {
-  return [
-    { id: 1, cons: 'JNB-2024-001', sender: 'Acme Exports', orig: 'Johannesburg', receiver: 'TradeCo UK', dest: 'London', stat: 'delivered', pri: 'normal', notes: 'Fragile', date: '2024-09-10T08:00:00Z', expectedDate: '2024-09-20', cost: 2400, history: [{ d: '2024-09-10T08:00:00Z', t: 'Created' }, { d: '2024-09-18T14:00:00Z', t: 'Delivered' }] },
-    { id: 2, cons: 'DUR-2024-047', sender: 'SA Minerals', orig: 'Durban', receiver: 'Gulf Partners', dest: 'Dubai', stat: 'in-transit', pri: 'high', notes: 'Customs pre-cleared', date: '2024-11-01T10:30:00Z', expectedDate: '2024-11-15', cost: 3100, history: [{ d: '2024-11-01T10:30:00Z', t: 'Created' }, { d: '2024-11-03T09:00:00Z', t: 'Departed Durban' }] },
-    { id: 3, cons: 'CPT-2024-112', sender: 'Cape Logistics', orig: 'Cape Town', receiver: 'EAF Group', dest: 'Nairobi', stat: 'cleared', pri: 'normal', notes: '', date: '2024-11-18T14:15:00Z', expectedDate: '2024-11-28', cost: 1850, history: [{ d: '2024-11-18T14:15:00Z', t: 'Created' }, { d: '2024-11-22T11:00:00Z', t: 'Customs cleared' }] },
-    { id: 4, cons: 'JNB-2024-089', sender: 'Mines Direct', orig: 'Johannesburg', receiver: 'Asia Pacific', dest: 'Singapore', stat: 'pending', pri: 'low', notes: 'Awaiting export docs', date: '2024-11-28T09:00:00Z', expectedDate: '2024-12-15', cost: 2950, history: [{ d: '2024-11-28T09:00:00Z', t: 'Created' }] },
-    { id: 5, cons: 'JNB-2024-103', sender: 'Acme Exports', orig: 'Johannesburg', receiver: 'Americas Co', dest: 'New York', stat: 'in-transit', pri: 'high', notes: 'Reefer container', date: '2024-12-02T06:00:00Z', expectedDate: '2024-12-18', cost: 3850, history: [{ d: '2024-12-02T06:00:00Z', t: 'Created' }, { d: '2024-12-04T08:00:00Z', t: 'Loaded at port' }] },
-    { id: 6, cons: 'DUR-2024-058', sender: 'SA Minerals', orig: 'Durban', receiver: 'Bharat Trade', dest: 'Mumbai', stat: 'pending', pri: 'normal', notes: '', date: '2024-12-05T08:45:00Z', expectedDate: '2024-12-22', cost: 2200, history: [{ d: '2024-12-05T08:45:00Z', t: 'Created' }] },
-    { id: 7, cons: 'CPT-2025-001', sender: 'Cape Logistics', orig: 'Cape Town', receiver: 'Euro Freight', dest: 'Rotterdam', stat: 'in-transit', pri: 'normal', notes: 'Full container', date: '2025-01-10T07:00:00Z', expectedDate: '2025-01-28', cost: 2650, history: [{ d: '2025-01-10T07:00:00Z', t: 'Created' }] },
-    { id: 8, cons: 'JNB-2025-014', sender: 'Gold Fields SA', orig: 'Johannesburg', receiver: 'Zurich Vault', dest: 'Zurich', stat: 'delivered', pri: 'high', notes: 'Insured', date: '2025-01-22T09:30:00Z', expectedDate: '2025-01-28', cost: 4200, history: [{ d: '2025-01-22T09:30:00Z', t: 'Created' }, { d: '2025-01-30T16:00:00Z', t: 'Delivered' }] },
-  ];
-}
-
-function seedWH() {
-  return [
-    { id: 101, cons: 'JNB-2024-001', desc: 'Electronics — fragile', qty: '12 pallets', boxes: '48 boxes', loc: 'bay-a', stat: 'in-store', shipRef: '', notes: 'Handle with care', overnight: 'Awaiting collection by consignee', pickup: '2024-09-12', date: '2024-09-10T08:00:00Z', log: [{ d: '2024-09-10T08:00:00Z', t: 'Received into Bay A' }, { d: '2024-09-11T09:00:00Z', t: 'Moved to shelf A-14' }] },
-    { id: 102, cons: 'DUR-2024-047', desc: 'Raw minerals', qty: '3 containers', boxes: '', loc: 'bay-b', stat: 'inbound', shipRef: 'DUR-2024-047', notes: 'ETA tomorrow', overnight: '', pickup: '', date: '2024-11-01T10:30:00Z', log: [{ d: '2024-11-01T10:30:00Z', t: 'Logged as inbound' }] },
-    { id: 103, cons: 'CPT-2024-112', desc: 'Perishables', qty: '40 crates', boxes: '40 boxes', loc: 'cold-store', stat: 'in-store', shipRef: 'CPT-2024-112', notes: 'Temp: 4°C', overnight: 'Driver unavailable until morning — temp-controlled overnight hold', pickup: '2024-11-19', date: '2024-11-18T14:15:00Z', log: [{ d: '2024-11-18T14:15:00Z', t: 'Placed in cold store' }, { d: '2024-11-20T08:00:00Z', t: 'Temp check passed' }] },
-    { id: 104, cons: 'JNB-2024-089', desc: 'Machinery parts', qty: '6 crates', boxes: '6 boxes', loc: 'bay-c', stat: 'dispatched', shipRef: 'JNB-2024-089', notes: '', overnight: '', pickup: '', date: '2024-11-28T09:00:00Z', log: [{ d: '2024-11-28T09:00:00Z', t: 'Received' }, { d: '2024-11-30T11:00:00Z', t: 'Dispatched to freight' }] },
-    { id: 105, cons: 'JNB-2024-103', desc: 'Refrigerated goods', qty: '1 reefer', boxes: '12 boxes', loc: 'cold-store', stat: 'inbound', shipRef: 'JNB-2024-103', notes: 'Reefer container', overnight: 'Customs inspection pending — must stay overnight', pickup: '2024-12-03', date: '2024-12-02T06:00:00Z', log: [{ d: '2024-12-02T06:00:00Z', t: 'Logged as inbound' }] },
-    { id: 106, cons: 'DUR-2024-058', desc: 'Auto components', qty: '8 crates', boxes: '8 boxes', loc: 'bay-a', stat: 'in-store', shipRef: 'DUR-2024-058', notes: '', overnight: 'Receiving dock closed — no outbound until 08:00', pickup: '2024-12-06', date: '2024-12-05T16:30:00Z', log: [{ d: '2024-12-05T16:30:00Z', t: 'Received late afternoon' }, { d: '2024-12-05T17:00:00Z', t: 'Overnight hold logged — dock closure' }] },
-  ];
-}
-
-// ═══════════════════════════════════════════════
 // THEME
 // ═══════════════════════════════════════════════
 let currentTheme = localStorage.getItem('theme') || 'dark';
@@ -1736,7 +1709,7 @@ document.addEventListener('keydown', e => {
 });
 
 // ═══════════════════════════════════════════════
-// LOAD DATA (no auth)
+// LOAD DATA (no auth, no demo seeding)
 // ═══════════════════════════════════════════════
 async function loadData() {
   try {
@@ -1765,19 +1738,13 @@ async function loadData() {
       date: r.created_at, log: r.log || []
     }));
 
-    if (DB.length === 0 && WH.length === 0) {
-      DB = seed();
-      WH = seedWH();
-      DB.forEach(s => s.id = Date.now() + Math.random() * 1e6 + s.id);
-      WH.forEach(w => w.id = Date.now() + Math.random() * 1e6 + w.id);
-      await save();
-      await saveWH();
-    }
+    // No automatic seeding – just show whatever is in the database (even if empty)
   } catch (e) {
     console.error('loadData error:', e);
     toast('⚠ Could not load data — check your connection.');
-    DB = JSON.parse(localStorage.getItem('stv5') || 'null') || seed();
-    WH = JSON.parse(localStorage.getItem('wh1') || 'null') || seedWH();
+    // Only fall back to localStorage if we have data there; otherwise start fresh
+    DB = JSON.parse(localStorage.getItem('stv5') || '[]');
+    WH = JSON.parse(localStorage.getItem('wh1') || '[]');
   }
 }
 
@@ -1785,9 +1752,9 @@ async function loadData() {
 // INIT
 // ═══════════════════════════════════════════════
 window.addEventListener('load', async () => {
-  // No auth — load data directly
-  DB = JSON.parse(localStorage.getItem('stv5') || 'null') || [];
-  WH = JSON.parse(localStorage.getItem('wh1') || 'null') || [];
+  // No auth – load data directly
+  DB = JSON.parse(localStorage.getItem('stv5') || '[]');
+  WH = JSON.parse(localStorage.getItem('wh1') || '[]');
   geoCache = JSON.parse(localStorage.getItem('geoCache5') || '{}');
   document.getElementById('appShell').classList.add('on');
   document.getElementById('userEmail').textContent = 'Team workspace';
