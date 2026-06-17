@@ -23,7 +23,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
-/* ── CSS unchanged (same as your original) ── */
+/* CSS unchanged */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#080808;--s1:#0f0f0f;--s2:#151515;--s3:#1c1c1c;
@@ -607,7 +607,7 @@ async function save() {
     const toUpdate = rows.filter(r => r.id !== undefined);
     if (toUpdate.length) await sb.from('shipments').upsert(toUpdate);
     if (toInsert.length) {
-      const { data, error } = await sb.from('shipments').insert(toInsert).select();
+      const { data, error } = await sb.from('shipments').insert(toInsert).select(); // FIXED
       if (!error && data) {
         data.forEach((row) => {
           const tempRow = DB.find(s => s.cons === row.cons && s.id > 1e12);
@@ -637,7 +637,7 @@ async function saveWH() {
     const toUpdate = rows.filter(r => r.id !== undefined);
     if (toUpdate.length) await sb.from('warehouse_items').upsert(toUpdate);
     if (toInsert.length) {
-      const { data, error } = await sb.from('warehouse_items').insert(toInsert).select();
+      const { data, error } = await sb.from('warehouse_items').insert(toInsert).select(); // FIXED
       if (!error && data) {
         data.forEach(row => {
           const tempRow = WH.find(w => w.cons === row.cons && w.id > 1e12);
@@ -1513,7 +1513,7 @@ async function loadData() {
   try {
     const { data: shipRows, error: shipErr } = await sb
       .from('shipments')
-      .select()            // ← FIXED: no '*', avoids columns param conflict
+      .select()            // ← FIXED: no '*'
       .eq('org_id', currentOrgId)
       .order('created_at', { ascending: false });
     if (shipErr) throw shipErr;
@@ -1526,7 +1526,7 @@ async function loadData() {
 
     const { data: whRows, error: whErr } = await sb
       .from('warehouse_items')
-      .select()            // ← FIXED
+      .select()            // ← FIXED: no '*'
       .eq('org_id', currentOrgId)
       .order('created_at', { ascending: false });
     if (whErr) throw whErr;
