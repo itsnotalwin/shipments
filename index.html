@@ -23,9 +23,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
+/* ── CSS unchanged (same as your original) ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-/* ── THEME VARS ─────────────────────────────── */
 :root{
   --bg:#080808;--s1:#0f0f0f;--s2:#151515;--s3:#1c1c1c;
   --b1:#1e1e1e;--b2:#2a2a2a;--b3:#383838;
@@ -44,11 +43,8 @@
   --card-bg:#ececea;
   --trend-up:#3a7a3a;--trend-dn:#8a3a3a;--trend-flat:#888;
 }
-
 body{background:var(--bg);color:var(--t1);font-family:'DM Mono',monospace;font-size:13px;line-height:1.5;min-height:100vh;transition:background .2s,color .2s}
 .wrap{max-width:1240px;margin:0 auto;padding:36px 30px 110px}
-
-/* ── HEADER ─────────────────────────────────── */
 .header{display:flex;align-items:center;justify-content:space-between;padding-bottom:20px;border-bottom:1px solid var(--b1);margin-bottom:0}
 .header-left{display:flex;align-items:baseline;gap:14px}
 .wordmark{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);font-weight:500}
@@ -57,15 +53,11 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Mono',monospace;font-s
 .header-meta{font-size:11px;color:var(--t3)}
 .theme-btn{background:none;border:1px solid var(--b2);color:var(--t2);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;cursor:pointer;transition:all .15s}
 .theme-btn:hover{color:var(--t1);border-color:var(--b3)}
-
-/* ── TABS ────────────────────────────────────── */
 .tabs{display:flex;border-bottom:1px solid var(--b1);margin-bottom:28px}
 .tab-btn{background:none;border:none;border-bottom:1px solid transparent;margin-bottom:-1px;padding:13px 18px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);cursor:pointer;transition:color .12s}
 .tab-btn:hover{color:var(--t2)}
 .tab-btn.on{color:var(--t1);border-bottom-color:var(--t1)}
 .panel{display:none}.panel.on{display:block}
-
-/* ── OVERVIEW STAT CARDS ─────────────────────── */
 .stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--b1);border:1px solid var(--b1);margin-bottom:26px}
 .sc{background:var(--card-bg);padding:20px 22px;cursor:pointer;transition:background .1s;position:relative;overflow:hidden}
 .sc:hover,.sc.on{background:var(--s2)}
@@ -77,8 +69,6 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Mono',monospace;font-s
 .sc-trend.flat{color:var(--trend-flat);border-color:var(--trend-flat)}
 .sc-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
 .sc-spark{width:100%;height:24px;display:block}
-
-/* ── CHART ROW ───────────────────────────────── */
 .chart-row{display:grid;grid-template-columns:260px 1fr;gap:1px;background:var(--b1);border:1px solid var(--b1);margin-bottom:26px}
 .chart-card{background:var(--s1);padding:22px}
 .chart-ttl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:16px}
@@ -91,8 +81,6 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Mono',monospace;font-s
 .dl-name{font-size:11px;color:var(--t2);text-transform:uppercase;letter-spacing:.06em}
 .dl-val{font-size:11px;color:var(--t1)}
 .bar-svg{width:100%;display:block}
-
-/* ── INPUTS ──────────────────────────────────── */
 input[type="text"],input[type="date"],select,textarea{
   background:var(--s1);border:1px solid var(--b2);color:var(--t1);
   font-family:'DM Mono',monospace;font-size:12px;padding:9px 11px;
@@ -100,8 +88,6 @@ input[type="text"],input[type="date"],select,textarea{
 input:focus,select:focus,textarea:focus{border-color:var(--t2)}
 input::placeholder,textarea::placeholder{color:var(--t3)}
 select{cursor:pointer}
-
-/* ── BUTTONS ─────────────────────────────────── */
 .btn{background:transparent;border:1px solid var(--b2);color:var(--t2);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:9px 15px;cursor:pointer;white-space:nowrap;transition:color .1s,border-color .1s,background .1s}
 .btn:hover{color:var(--t1);border-color:var(--b3)}
 .btn-p{background:var(--t1);color:var(--bg);border-color:var(--t1)}
@@ -109,8 +95,6 @@ select{cursor:pointer}
 .btn-d{color:#c04040;border-color:#2a1010}.btn-d:hover{background:#1a0808;border-color:#c04040}
 .btn-sm{padding:6px 11px;font-size:10px}
 .btn-xs{padding:4px 8px;font-size:10px}
-
-/* ── FORM ────────────────────────────────────── */
 .form-panel{background:var(--s1);border:1px solid var(--b1);max-height:0;overflow:hidden;transition:max-height .25s ease,border-color .2s;margin-bottom:12px}
 .form-panel.on{max-height:600px;border-color:var(--b2)}
 .form-inner{padding:20px 22px}
@@ -123,12 +107,8 @@ select{cursor:pointer}
 .field input,.field select,.field textarea{background:var(--bg);border-color:var(--b1)}
 .field textarea{height:38px}
 .f-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--b1)}
-
-/* ── TOOLBAR ─────────────────────────────────── */
 .toolbar{display:flex;align-items:center;gap:9px;margin-bottom:10px;flex-wrap:wrap}
 .tb-search{flex:1;min-width:180px}
-
-/* ── TABLE ───────────────────────────────────── */
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;table-layout:fixed}
 thead th{background:var(--s1);border:1px solid var(--b1);padding:9px 10px;text-align:left;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);white-space:nowrap;user-select:none}
@@ -149,8 +129,6 @@ tbody td{padding:10px 10px;font-size:12px;vertical-align:middle;overflow:hidden;
 .del-btn:hover{color:#c04040}
 .cell-edit{background:var(--bg);border:1px solid var(--t2)!important;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:3px 6px;outline:none;width:100%}
 td.editing{padding:4px 6px!important}
-
-/* ── BADGES ──────────────────────────────────── */
 .badge{display:inline-block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border:1px solid}
 .b-pending{color:#606060;border-color:#303030}
 .b-in-transit{color:#909090;border-color:#484848}
@@ -160,14 +138,10 @@ td.editing{padding:4px 6px!important}
 [data-theme="light"] .b-in-transit{color:#555;border-color:#aaa}
 [data-theme="light"] .b-cleared{color:#333;border-color:#888}
 [data-theme="light"] .b-delivered{color:#111;border-color:#555}
-
-/* ── PRIORITY ────────────────────────────────── */
 .pri{display:inline-block;font-size:10px;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px}
 .pri-high{color:#c06040;background:#1a0e08;border:1px solid #3a1a10}
 .pri-normal{color:var(--t3);border:1px solid transparent}
 .pri-low{color:var(--t4);border:1px solid transparent}
-
-/* ── MAP (D3) ────────────────────────────────── */
 .map-wrap{border:1px solid var(--b1);background:var(--s1);margin-bottom:24px}
 .map-hdr{padding:13px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .map-ttl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3)}
@@ -176,8 +150,6 @@ td.editing{padding:4px 6px!important}
 .map-legend{padding:11px 20px;border-top:1px solid var(--b1);display:flex;gap:20px;flex-wrap:wrap}
 .ml-item{display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t2)}
 .ml-line{width:18px;height:2px;border-radius:1px}
-
-/* D3 map styles */
 .countries path{fill:var(--map-land);stroke:var(--map-border);stroke-width:.4}
 .graticule{fill:none;stroke:var(--map-graticule);stroke-width:.3}
 .sphere{fill:var(--map-bg)}
@@ -185,8 +157,6 @@ td.editing{padding:4px 6px!important}
 .city-dot{fill:var(--t1);opacity:.85}
 .city-label{font-family:'DM Mono',monospace;font-size:9px;fill:var(--t2)}
 .arc-dot{pointer-events:none}
-
-/* ── ALERTS ──────────────────────────────────── */
 .alert-banner{position:fixed;top:0;left:0;right:0;background:#2a1010;border-bottom:1px solid #4a2020;color:#e88888;padding:12px 30px;font-size:12px;letter-spacing:.05em;z-index:200;display:none;text-align:center}
 .alert-banner.on{display:block;animation:slideDown .3s ease}
 @keyframes slideDown{from{transform:translateY(-100%);}to{transform:translateY(0)}}
@@ -199,8 +169,6 @@ td.editing{padding:4px 6px!important}
 .due-overdue{background:#2a1010;color:#e88888;border:1px solid #4a2020}
 .due-atrisk{background:#2a2010;color:#d4a860;border:1px solid #4a4020}
 .due-ontrack{background:#1a2a1a;color:#88c088;border:1px solid #2a4a2a}
-
-/* ── WAREHOUSES ──────────────────────────────── */
 .wh-toolbar{display:flex;align-items:center;gap:9px;margin-bottom:16px;flex-wrap:wrap}
 .wh-search{flex:1;min-width:180px}
 .wh-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--b1);border:1px solid var(--b1);margin-bottom:26px}
@@ -242,8 +210,6 @@ td.editing{padding:4px 6px!important}
 .wh-stat.overnight-stat .wh-stat-num{color:#c08050}
 .wh-pickup{font-size:10px;color:var(--t3);margin-top:4px}
 .qty-badge{font-size:11px;color:var(--t3);min-width:32px;text-align:right}
-
-/* ── DRAWER ──────────────────────────────────── */
 .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;opacity:0;pointer-events:none;transition:opacity .2s}
 .drawer-overlay.on{opacity:1;pointer-events:all}
 .drawer{position:fixed;right:0;top:0;bottom:0;width:420px;background:var(--s1);border-left:1px solid var(--b2);z-index:301;transform:translateX(100%);transition:transform .22s ease;overflow-y:auto}
@@ -262,8 +228,6 @@ td.editing{padding:4px 6px!important}
 .hist-date{font-size:10px;color:var(--t3);white-space:nowrap;min-width:80px}
 .hist-txt{font-size:11px;color:var(--t2)}
 .d-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-
-/* ── IMPORT MODAL ────────────────────────────── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .18s}
 .modal-overlay.on{opacity:1;pointer-events:all}
 .modal{background:var(--s2);border:1px solid var(--b2);width:620px;max-width:95vw;max-height:90vh;overflow-y:auto}
@@ -283,21 +247,14 @@ td.editing{padding:4px 6px!important}
 .im-row select{max-width:160px;font-size:11px;padding:5px 8px}
 .import-log{font-size:11px;color:var(--t2);background:var(--bg);border:1px solid var(--b1);padding:10px 12px;max-height:100px;overflow-y:auto;line-height:1.8}
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid var(--b1)}
-
-/* ── EMPTY ───────────────────────────────────── */
 .empty{text-align:center;padding:50px 0;color:var(--t3);font-size:12px;letter-spacing:.05em;border:1px solid var(--b1);border-top:none}
 .empty-sym{font-size:20px;margin-bottom:10px;opacity:.2}
-
-/* ── BULK BAR ────────────────────────────────── */
 .bulk-bar{position:fixed;bottom:0;left:0;right:0;background:var(--s2);border-top:1px solid var(--b3);padding:12px 30px;display:flex;align-items:center;gap:9px;transform:translateY(100%);transition:transform .2s;z-index:100}
 .bulk-bar.on{transform:translateY(0)}
 .bulk-count{font-size:11px;letter-spacing:.07em;color:var(--t2);flex:1}
 .bulk-sel{background:var(--bg);border:1px solid var(--b3);color:var(--t1);font-family:'DM Mono',monospace;font-size:11px;padding:7px 9px;appearance:none;cursor:pointer}
-
-/* ── TOAST ───────────────────────────────────── */
 .toast{position:fixed;bottom:64px;right:22px;background:var(--t1);color:var(--bg);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;padding:9px 15px;opacity:0;transform:translateY(8px);transition:opacity .18s,transform .18s;pointer-events:none;z-index:500}
 .toast.on{opacity:1;transform:translateY(0)}
-
 @media(max-width:800px){
   .wrap{padding:20px 14px 100px}
   .stat-cards{grid-template-columns:repeat(2,1fr)}
@@ -314,7 +271,6 @@ td.editing{padding:4px 6px!important}
 
 <div class="alert-banner" id="alertBanner"><span id="alertText"></span><span class="alert-close" onclick="closeAlert()">✕</span></div>
 
-<!-- HEADER -->
 <header class="header">
   <div class="header-left">
     <span class="wordmark">Freight</span>
@@ -327,7 +283,6 @@ td.editing{padding:4px 6px!important}
   </div>
 </header>
 
-<!-- TABS -->
 <nav class="tabs">
   <button class="tab-btn on" onclick="gotoTab('overview',this)">Overview</button>
   <button class="tab-btn"    onclick="gotoTab('shipments',this)">Shipments</button>
@@ -337,8 +292,6 @@ td.editing{padding:4px 6px!important}
 
 <!-- ══ OVERVIEW ══════════════════════════════ -->
 <div class="panel on" id="panel-overview">
-
-  <!-- Stat cards -->
   <div class="stat-cards">
     <div class="sc on" id="sc-all" onclick="jumpFilter('all',this)">
       <div class="sc-top"><div class="sc-num" id="sn-all">0</div><span class="sc-trend flat" id="tr-all">—</span></div>
@@ -361,8 +314,6 @@ td.editing{padding:4px 6px!important}
       <svg class="sc-spark" id="sp-overdue"></svg>
     </div>
   </div>
-
-  <!-- Charts -->
   <div class="chart-row">
     <div class="chart-card">
       <div class="chart-ttl">Status Breakdown</div>
@@ -448,8 +399,6 @@ td.editing{padding:4px 6px!important}
 
 <!-- ══ WAREHOUSE ══════════════════════════════ -->
 <div class="panel" id="panel-warehouse">
-
-  <!-- Warehouse stats -->
   <div class="wh-stats" style="grid-template-columns:repeat(5,1fr)">
     <div class="wh-stat"><div class="wh-stat-num" id="wh-total">0</div><div class="wh-stat-lbl">Total Consignments</div></div>
     <div class="wh-stat"><div class="wh-stat-num" id="wh-inbound">0</div><div class="wh-stat-lbl">Inbound</div></div>
@@ -458,13 +407,11 @@ td.editing{padding:4px 6px!important}
     <div class="wh-stat overnight-stat"><div class="wh-stat-num" id="wh-overnight">0</div><div class="wh-stat-lbl">Overnight Holds</div></div>
   </div>
 
-  <!-- Sub-tabs -->
   <div class="wh-subtabs">
     <button class="wh-subtab on" onclick="gotoWhSubtab('all',this)">All Items <span class="wh-subtab-count" id="wh-count-all">0</span></button>
     <button class="wh-subtab" onclick="gotoWhSubtab('overnight',this)">Overnight Holds <span class="wh-subtab-count" id="wh-count-overnight">0</span></button>
   </div>
 
-  <!-- Toolbar -->
   <div class="wh-toolbar">
     <div class="wh-search">
       <input type="text" id="whSearch" placeholder="Search consignment, location, description…" oninput="renderWarehouse()">
@@ -487,7 +434,6 @@ td.editing{padding:4px 6px!important}
     <button class="btn btn-p" id="whAddBtn" onclick="toggleWhForm()">+ Add</button>
   </div>
 
-  <!-- Add form -->
   <div class="wh-add-form" id="whFormPanel">
     <div class="wh-add-inner">
       <div class="f-section">Consignment</div>
@@ -616,8 +562,7 @@ td.editing{padding:4px 6px!important}
 
 <script>
 // ═══════════════════════════════════════════════
-// SUPABASE CONFIG — REPLACE WITH YOUR PROJECT DETAILS
-// ═══════════════════════════════════════════════
+// SUPABASE CONFIG
 const SUPABASE_URL = 'https://vbjoazbrwpoydektszzs.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_V2TJE-zR7bq5P-sc1s8ZFA_P2k1qbZ-';
 
@@ -625,9 +570,9 @@ const sb = (typeof supabase !== 'undefined' && SUPABASE_URL.startsWith('https://
   ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
-// No authentication – everyone uses the same shared workspace
-const currentOrgId = '00000000-0000-0000-0000-000000000001';  // Hardcoded org id
+const currentOrgId = '00000000-0000-0000-0000-000000000001';   // shared workspace
 
+// ── DATA ─────────────────────────────────────
 let DB = [];
 let WH = [];
 let sel = new Set();
@@ -645,13 +590,13 @@ const PLBL = { high: 'High', normal: 'Normal', low: 'Low' };
 let geoCache = {};
 let geoQueue = [], geoRunning = false;
 
-// ── SAVE / SYNC ──────────────────────────────────
+// ── SAVE ──────────────────────────────────────
 async function save() {
-  localStorage.setItem('stv5', JSON.stringify(DB));   // local fallback cache
+  localStorage.setItem('stv5', JSON.stringify(DB));
   if (!sb) return;
   try {
     const rows = DB.map(s => ({
-      id: s.id > 1e12 ? undefined : s.id,   // large id = temp, let DB assign
+      id: s.id > 1e12 ? undefined : s.id,
       org_id: currentOrgId,
       cons: s.cons, sender: s.sender, orig: s.orig, receiver: s.receiver, dest: s.dest,
       stat: s.stat, pri: s.pri, notes: s.notes,
@@ -664,25 +609,21 @@ async function save() {
     if (toInsert.length) {
       const { data, error } = await sb.from('shipments').insert(toInsert).select();
       if (!error && data) {
-        data.forEach((row, i) => {
+        data.forEach((row) => {
           const tempRow = DB.find(s => s.cons === row.cons && s.id > 1e12);
           if (tempRow) tempRow.id = row.id;
         });
       }
     }
-    // Delete rows on server that no longer exist locally
     const localIds = DB.filter(s => s.id < 1e12).map(s => s.id);
     if (localIds.length) {
       await sb.from('shipments').delete().eq('org_id', currentOrgId).not('id', 'in', `(${localIds.join(',')})`);
     }
-  } catch (e) {
-    console.error('save() sync error:', e);
-    toast('⚠ Sync failed — changes saved locally only.');
-  }
+  } catch (e) { console.error('save error', e); toast('⚠ Sync failed'); }
 }
 
 async function saveWH() {
-  localStorage.setItem('wh1', JSON.stringify(WH));   // local fallback cache
+  localStorage.setItem('wh1', JSON.stringify(WH));
   if (!sb) return;
   try {
     const rows = WH.map(w => ({
@@ -708,15 +649,10 @@ async function saveWH() {
     if (localIds.length) {
       await sb.from('warehouse_items').delete().eq('org_id', currentOrgId).not('id', 'in', `(${localIds.join(',')})`);
     }
-  } catch (e) {
-    console.error('saveWH() sync error:', e);
-    toast('⚠ Sync failed — changes saved locally only.');
-  }
+  } catch (e) { console.error('saveWH error', e); toast('⚠ Sync failed'); }
 }
 
-// ═══════════════════════════════════════════════
-// THEME
-// ═══════════════════════════════════════════════
+// ── THEME ─────────────────────────────────────
 let currentTheme = localStorage.getItem('theme') || 'dark';
 function applyTheme(t) {
   currentTheme = t;
@@ -729,9 +665,7 @@ function applyTheme(t) {
 function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
 applyTheme(currentTheme);
 
-// ═══════════════════════════════════════════════
-// GEOCODING
-// ═══════════════════════════════════════════════
+// ── GEOCODING ─────────────────────────────────
 function geocity(name) {
   return new Promise(resolve => {
     const k = name.toLowerCase().trim();
@@ -745,7 +679,6 @@ async function processGeoQueue() {
   while (geoQueue.length) {
     const { k, name, resolve } = geoQueue.shift();
     if (k in geoCache) { resolve(geoCache[k]); continue; }
-    // Check Supabase shared cache first (avoids re-geocoding cities)
     if (sb) {
       try {
         const { data } = await sb.from('geocode_cache').select('lat,lng').eq('org_id', currentOrgId).eq('city_key', k).maybeSingle();
@@ -753,7 +686,7 @@ async function processGeoQueue() {
           geoCache[k] = (data.lat != null && data.lng != null) ? [data.lat, data.lng] : null;
           resolve(geoCache[k]); continue;
         }
-      } catch (e) { /* fall through to Nominatim */ }
+      } catch {}
     }
     try {
       const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=1`, { headers: { 'Accept-Language': 'en', 'User-Agent': 'ShipmentTracker/2.0' } });
@@ -772,16 +705,11 @@ function saveGeo(k) {
   localStorage.setItem('geoCache5', JSON.stringify(all));
   if (sb) {
     const coord = geoCache[k];
-    sb.from('geocode_cache').upsert({
-      org_id: currentOrgId, city_key: k,
-      lat: coord ? coord[0] : null, lng: coord ? coord[1] : null
-    }).then(() => { }).catch(() => { });
+    sb.from('geocode_cache').upsert({ org_id: currentOrgId, city_key: k, lat: coord ? coord[0] : null, lng: coord ? coord[1] : null }).then(() => {}).catch(() => {});
   }
 }
 
-// ═══════════════════════════════════════════════
-// TABS
-// ═══════════════════════════════════════════════
+// ── TABS ──────────────────────────────────────
 function gotoTab(id, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
@@ -801,9 +729,7 @@ function jumpFilter(s) {
   gotoTab('shipments', document.querySelectorAll('.tab-btn')[1]);
 }
 
-// ═══════════════════════════════════════════════
-// KPI + OVERDUE LOGIC
-// ═══════════════════════════════════════════════
+// ── KPI LOGIC ─────────────────────────────────
 function isOverdue(s) {
   if (s.stat === 'delivered' || !s.expectedDate) return false;
   return new Date(s.expectedDate) < new Date();
@@ -815,8 +741,7 @@ function isAtRisk(s) {
 }
 function daysUntilDue(s) {
   if (!s.expectedDate) return null;
-  const days = Math.ceil((new Date(s.expectedDate) - new Date()) / (1000 * 60 * 60 * 24));
-  return days;
+  return Math.ceil((new Date(s.expectedDate) - new Date()) / (1000 * 60 * 60 * 24));
 }
 function calcKPIs() {
   const delivered = DB.filter(s => s.stat === 'delivered');
@@ -832,12 +757,7 @@ function calcKPIs() {
     });
     avgWHDays = (whDays.reduce((a, b) => a + b, 0) / whDays.length).toFixed(1);
   }
-  return {
-    onTimePercent: withDate.length > 0 ? Math.round((onTime / withDate.length) * 100) : 0,
-    avgWHDays: parseFloat(avgWHDays),
-    overdueCount: overdue,
-    avgCost: parseInt(avgCost)
-  };
+  return { onTimePercent: withDate.length > 0 ? Math.round((onTime / withDate.length) * 100) : 0, avgWHDays: parseFloat(avgWHDays), overdueCount: overdue, avgCost: parseInt(avgCost) };
 }
 function updateAlert() {
   const kpis = calcKPIs();
@@ -850,37 +770,27 @@ function updateAlert() {
   if (msg) {
     document.getElementById('alertText').textContent = '⚠ ' + msg;
     document.getElementById('alertBanner').classList.add('on');
-  } else {
-    closeAlert();
-  }
+  } else { closeAlert(); }
 }
 function closeAlert() { document.getElementById('alertBanner').classList.remove('on'); }
 
-// ═══════════════════════════════════════════════
-// STATS
+// ── STATS ─────────────────────────────────────
 function updateStats() {
   const now = new Date();
-  const thisMonth = DB.filter(s => { const d = new Date(s.date); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth(); }).length;
-  const lastMonth = DB.filter(s => { const d = new Date(s.date); const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1); return d.getFullYear() === lm.getFullYear() && d.getMonth() === lm.getMonth(); }).length;
-
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ y: d.getFullYear(), m: d.getMonth() });
+  }
   const kpis = calcKPIs();
   document.getElementById('sn-all').textContent = DB.length;
   document.getElementById('sn-ontime').textContent = kpis.onTimePercent + '%';
   document.getElementById('sn-avgwh').textContent = kpis.avgWHDays;
   document.getElementById('sn-overdue').textContent = kpis.overdueCount;
-
-  const delivered = DB.filter(s => s.stat === 'delivered');
-  const withDate = DB.filter(s => s.expectedDate);
-  if (withDate.length > 0) {
+  if (DB.filter(s => s.expectedDate).length > 0) {
     const trend = kpis.onTimePercent >= 85 ? 'up' : kpis.onTimePercent < 70 ? 'dn' : 'flat';
     document.getElementById('tr-ontime').className = 'sc-trend ' + trend;
     document.getElementById('tr-ontime').textContent = trend === 'up' ? '✓' : trend === 'dn' ? '⚠' : '→';
-  }
-
-  const months = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push({ y: d.getFullYear(), m: d.getMonth() });
   }
   const whDays = months.map(({ y, m }) => {
     const itemsMonth = WH.filter(w => {
@@ -888,15 +798,13 @@ function updateStats() {
     });
     return itemsMonth.length > 0 ? (itemsMonth.reduce((a, b) => a + Math.ceil((new Date(y, m + 1, 0) - new Date(b.date)) / (1000 * 60 * 60 * 24)), 0) / itemsMonth.length).toFixed(1) : 0;
   });
-  renderSparkline('sp-all', Array(6).fill(0).map((_, i) => DB.filter(s => { const d = new Date(s.date); return d.getMonth() === months[i].m && d.getFullYear() === months[i].y; }).length));
+  renderSparkline('sp-all', months.map(({ y, m }) => DB.filter(s => { const d = new Date(s.date); return d.getMonth() === m && d.getFullYear() === y; }).length));
   renderSparkline('sp-ontime', Array(6).fill(kpis.onTimePercent));
   renderSparkline('sp-avgwh', whDays.map(parseFloat));
   renderSparkline('sp-overdue', Array(6).fill(kpis.overdueCount));
-
   document.getElementById('hMeta').textContent = DB.length === 1 ? '1 shipment' : `${DB.length} shipments`;
   updateAlert();
 }
-
 function renderSparkline(id, data) {
   const svg = document.getElementById(id);
   if (!svg) return;
@@ -904,16 +812,12 @@ function renderSparkline(id, data) {
   const max = Math.max(...data, 1);
   const step = W / (data.length - 1 || 1);
   const pts = data.map((v, i) => `${i * step},${H - 1 - (v / max) * (H - 4)}`).join(' ');
-  const isDark = currentTheme === 'dark';
-  const col = isDark ? '#383838' : '#bbbbbb';
+  const col = currentTheme === 'dark' ? '#383838' : '#bbbbbb';
   svg.innerHTML = `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.2" stroke-linejoin="round"/>`;
 }
 
-// ═══════════════════════════════════════════════
-// CHARTS
-// ═══════════════════════════════════════════════
+// ── CHARTS ────────────────────────────────────
 function renderCharts() { renderDonut(); renderBar(); }
-
 function renderDonut() {
   const svg = document.getElementById('donutSvg');
   const leg = document.getElementById('donutLegend');
@@ -921,8 +825,7 @@ function renderDonut() {
   const cnts = { pending: 0, 'in-transit': 0, cleared: 0, delivered: 0 };
   DB.forEach(s => cnts[s.stat] = (cnts[s.stat] || 0) + 1);
   if (!total) {
-    svg.innerHTML = `<circle cx="80" cy="80" r="68" fill="none" stroke="var(--b1)" stroke-width="24"/>
-      <text x="80" y="85" text-anchor="middle" fill="var(--t3)" font-family="DM Mono,monospace" font-size="11">empty</text>`;
+    svg.innerHTML = `<circle cx="80" cy="80" r="68" fill="none" stroke="var(--b1)" stroke-width="24"/><text x="80" y="85" text-anchor="middle" fill="var(--t3)" font-family="DM Mono,monospace" font-size="11">empty</text>`;
     leg.innerHTML = ''; return;
   }
   let a = -Math.PI / 2, paths = '';
@@ -937,16 +840,9 @@ function renderDonut() {
   });
   const textCol = currentTheme === 'dark' ? '#f0f0f0' : '#111';
   const subCol = currentTheme === 'dark' ? '#3a3a3a' : '#bbb';
-  svg.innerHTML = paths +
-    `<text x="80" y="74" text-anchor="middle" fill="${textCol}" font-family="DM Mono,monospace" font-size="26" font-weight="300">${total}</text>
-     <text x="80" y="92" text-anchor="middle" fill="${subCol}" font-family="DM Mono,monospace" font-size="9" letter-spacing="1.5">TOTAL</text>`;
-  leg.innerHTML = Object.entries(cnts).map(([k, v]) => `
-    <div class="dl-row">
-      <div class="dl-left"><div class="dl-dot" style="background:${SCOL[k]}"></div><span class="dl-name">${SLBL[k]}</span></div>
-      <span class="dl-val">${v}</span>
-    </div>`).join('');
+  svg.innerHTML = paths + `<text x="80" y="74" text-anchor="middle" fill="${textCol}" font-family="DM Mono,monospace" font-size="26" font-weight="300">${total}</text><text x="80" y="92" text-anchor="middle" fill="${subCol}" font-family="DM Mono,monospace" font-size="9" letter-spacing="1.5">TOTAL</text>`;
+  leg.innerHTML = Object.entries(cnts).map(([k, v]) => `<div class="dl-row"><div class="dl-left"><div class="dl-dot" style="background:${SCOL[k]}"></div><span class="dl-name">${SLBL[k]}</span></div><span class="dl-val">${v}</span></div>`).join('');
 }
-
 function renderBar() {
   const svg = document.getElementById('barSvg');
   const W = svg.clientWidth || 640, H = 200;
@@ -970,8 +866,7 @@ function renderBar() {
     out += `<line x1="${pad.l}" y1="${y}" x2="${pad.l + cW}" y2="${y}" stroke="${gc}" stroke-width="1"/>`;
     if (i > 0) out += `<text x="${pad.l - 5}" y="${y + 4}" text-anchor="end" fill="${tc}" font-family="DM Mono,monospace" font-size="10">${v}</text>`;
   });
-  out += `<line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${pad.t + cH}" stroke="${ac}" stroke-width="1"/>
-    <line x1="${pad.l}" y1="${pad.t + cH}" x2="${pad.l + cW}" y2="${pad.t + cH}" stroke="${ac}" stroke-width="1"/>`;
+  out += `<line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${pad.t + cH}" stroke="${ac}" stroke-width="1"/><line x1="${pad.l}" y1="${pad.t + cH}" x2="${pad.l + cW}" y2="${pad.t + cH}" stroke="${ac}" stroke-width="1"/>`;
   months.forEach((mo, i) => {
     const cx2 = pad.l + slot * i + slot / 2, bh = mo.n / max * cH, by = pad.t + cH - bh;
     const fill = mo.n === 0 ? (currentTheme === 'dark' ? '#151515' : '#e8e8e8') : bc;
@@ -983,11 +878,8 @@ function renderBar() {
   svg.innerHTML = out;
 }
 
-// ═══════════════════════════════════════════════
-// D3 WORLD MAP
-// ═══════════════════════════════════════════════
+// ── D3 MAP ────────────────────────────────────
 let mapAnimId = null, worldData = null;
-
 async function renderMap() {
   if (mapAnimId) { cancelAnimationFrame(mapAnimId); mapAnimId = null; }
   const svgEl = document.getElementById('mapSvg');
@@ -999,10 +891,7 @@ async function renderMap() {
     try {
       const resp = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
       worldData = await resp.json();
-    } catch (e) {
-      document.getElementById('geoStatus').textContent = 'Map load failed — check connection.';
-      return;
-    }
+    } catch (e) { document.getElementById('geoStatus').textContent = 'Map load failed — check connection.'; return; }
   }
   document.getElementById('geoStatus').textContent = 'Geocoding cities…';
   const cities = new Set();
@@ -1010,34 +899,18 @@ async function renderMap() {
   await Promise.all([...cities].map(c => geocity(c)));
   const resolved = [...cities].filter(c => geoCache[c.toLowerCase().trim()]).length;
   document.getElementById('geoStatus').textContent = `${resolved}/${cities.size} cities resolved · OpenStreetMap + D3`;
-
   const saScale = (W / 960) * 1450;
-  const projection = d3.geoMercator()
-    .scale(saScale)
-    .center([27, -26])
-    .translate([W / 2, H / 2]);
+  const projection = d3.geoMercator().scale(saScale).center([27, -26]).translate([W / 2, H / 2]);
   projection.clipExtent([[0, 0], [W, H]]);
   const pathGen = d3.geoPath().projection(projection);
-  const svg = d3.select('#mapSvg')
-    .attr('viewBox', `0 0 ${W} ${H}`)
-    .attr('width', W).attr('height', H);
+  const svg = d3.select('#mapSvg').attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H);
   svg.append('rect').attr('width', W).attr('height', H).attr('fill', 'var(--map-bg)');
   svg.append('path').datum({ type: 'Sphere' }).attr('class', 'sphere').attr('d', pathGen);
   const graticule = d3.geoGraticule().step([5, 5]);
   svg.append('path').datum(graticule()).attr('class', 'graticule').attr('d', pathGen);
   const countries = topojson.feature(worldData, worldData.objects.countries);
-  svg.append('g').attr('class', 'countries')
-    .selectAll('path')
-    .data(countries.features)
-    .enter().append('path')
-    .attr('d', pathGen);
-  svg.append('path')
-    .datum(topojson.mesh(worldData, worldData.objects.countries, (a, b) => a !== b))
-    .attr('fill', 'none')
-    .attr('stroke', 'var(--map-border)')
-    .attr('stroke-width', .4)
-    .attr('d', pathGen);
-
+  svg.append('g').attr('class', 'countries').selectAll('path').data(countries.features).enter().append('path').attr('d', pathGen);
+  svg.append('path').datum(topojson.mesh(worldData, worldData.objects.countries, (a, b) => a !== b)).attr('fill', 'none').attr('stroke', 'var(--map-border)').attr('stroke-width', .4).attr('d', pathGen);
   const arcData = DB.map((s, i) => {
     const ok = geoCache[(s.orig || '').toLowerCase().trim()];
     const dk = geoCache[(s.dest || '').toLowerCase().trim()];
@@ -1047,7 +920,6 @@ async function renderMap() {
     if (!op || !dp) return null;
     return { s, op, dp, color: ARCOL[s.stat], offset: i * 35 };
   }).filter(Boolean);
-
   const cityMap = new Map();
   DB.forEach(s => {
     const ok = geoCache[(s.orig || '').toLowerCase().trim()];
@@ -1055,37 +927,16 @@ async function renderMap() {
     if (ok) cityMap.set(s.orig, ok);
     if (dk) cityMap.set(s.dest, dk);
   });
-
   const arcG = svg.append('g').attr('class', 'arc-group');
-  arcData.forEach(a => {
-    arcG.append('path')
-      .attr('class', 'arc-path')
-      .attr('d', arcPath(a.op, a.dp))
-      .attr('stroke', a.color)
-      .attr('stroke-width', 1)
-      .attr('opacity', .12);
-  });
+  arcData.forEach(a => arcG.append('path').attr('class', 'arc-path').attr('d', arcPath(a.op, a.dp)).attr('stroke', a.color).attr('stroke-width', 1).attr('opacity', .12));
   const defs = svg.append('defs');
   const filt = defs.append('filter').attr('id', 'glow').attr('x', '-60%').attr('y', '-60%').attr('width', '220%').attr('height', '220%');
   filt.append('feGaussianBlur').attr('stdDeviation', '2.5').attr('result', 'blur');
   const merge = filt.append('feMerge');
   merge.append('feMergeNode').attr('in', 'blur');
   merge.append('feMergeNode').attr('in', 'SourceGraphic');
-  const brightPaths = arcData.map(a =>
-    arcG.append('path')
-      .attr('class', 'arc-path')
-      .attr('stroke', a.color)
-      .attr('stroke-width', 1.4)
-      .attr('opacity', 0)
-      .attr('filter', 'url(#glow)')
-  );
-  const dots = arcData.map(a =>
-    svg.append('circle')
-      .attr('class', 'arc-dot')
-      .attr('r', 3)
-      .attr('fill', a.color)
-      .attr('opacity', 0)
-  );
+  const brightPaths = arcData.map(a => arcG.append('path').attr('class', 'arc-path').attr('stroke', a.color).attr('stroke-width', 1.4).attr('opacity', 0).attr('filter', 'url(#glow)'));
+  const dots = arcData.map(a => svg.append('circle').attr('class', 'arc-dot').attr('r', 3).attr('fill', a.color).attr('opacity', 0));
   const cityG = svg.append('g');
   cityMap.forEach((coord, name) => {
     const p = projection([coord[1], coord[0]]);
@@ -1093,7 +944,6 @@ async function renderMap() {
     cityG.append('circle').attr('class', 'city-dot').attr('cx', p[0]).attr('cy', p[1]).attr('r', 3.5);
     cityG.append('text').attr('class', 'city-label').attr('x', p[0] + 7).attr('y', p[1] + 4).text(name);
   });
-
   const LOOP = 320, TRAVEL = 200;
   let frame = 0;
   const ghostPaths = arcData.map(a => arcPath(a.op, a.dp));
@@ -1104,18 +954,14 @@ async function renderMap() {
       const t = Math.min(lt / TRAVEL, 1);
       const p = pointOnArc(a.op, a.dp, t);
       dots[i].attr('cx', p[0]).attr('cy', p[1]).attr('opacity', t < 1 ? 0.9 : 0);
-      if (t >= 1) {
-        brightPaths[i].attr('d', ghostPaths[i]).attr('opacity', 0.55);
-      } else {
-        brightPaths[i].attr('d', partialArcPath(a.op, a.dp, t)).attr('opacity', Math.min(t * 2, 0.65));
-      }
+      if (t >= 1) brightPaths[i].attr('d', ghostPaths[i]).attr('opacity', 0.55);
+      else brightPaths[i].attr('d', partialArcPath(a.op, a.dp, t)).attr('opacity', Math.min(t * 2, 0.65));
     });
     frame++;
     mapAnimId = requestAnimationFrame(tick);
   }
   tick();
 }
-
 function arcPath(o, d) {
   const mx = (o[0] + d[0]) / 2, my = (o[1] + d[1]) / 2 - Math.hypot(d[0] - o[0], d[1] - o[1]) * 0.35;
   return `M${o[0]},${o[1]} Q${mx},${my} ${d[0]},${d[1]}`;
@@ -1129,15 +975,11 @@ function partialArcPath(o, d, t) {
   if (t <= 0) return `M${o[0]},${o[1]}`;
   const steps = 40;
   const pts = [];
-  for (let i = 0; i <= steps; i++) {
-    pts.push(pointOnArc(o, d, t * (i / steps)));
-  }
+  for (let i = 0; i <= steps; i++) pts.push(pointOnArc(o, d, t * (i / steps)));
   return 'M' + pts.map(p => p.join(',')).join('L');
 }
 
-// ═══════════════════════════════════════════════
-// WAREHOUSE DATA + LOGIC
-// ═══════════════════════════════════════════════
+// ── WAREHOUSE ─────────────────────────────────
 let whFormOpen = false;
 let whSubtab = 'all';
 function gotoWhSubtab(id, btn) {
@@ -1148,7 +990,6 @@ function gotoWhSubtab(id, btn) {
 }
 const WSLBL = { 'inbound': 'Inbound', 'in-store': 'In Store', 'dispatched': 'Dispatched' };
 const WSLOC = { 'bay-a': 'Bay A', 'bay-b': 'Bay B', 'bay-c': 'Bay C', 'cold-store': 'Cold Store', 'hazmat': 'Hazmat Zone' };
-
 function getWhRows() {
   const q = (document.getElementById('whSearch') || { value: '' }).value.toLowerCase();
   const ls = (document.getElementById('whLocSel') || { value: 'all' }).value;
@@ -1161,12 +1002,10 @@ function getWhRows() {
     return ml && ms && mq && mo;
   }).sort((a, b) => new Date(b.date) - new Date(a.date));
 }
-
 function whStatusBadge(s) {
   const cols = { 'inbound': 'color:#707070;border-color:#383838', 'in-store': 'color:#b0b0b0;border-color:#545454', 'dispatched': 'color:#f0f0f0;border-color:#888' };
   return `<span class="badge" style="${cols[s] || ''}">${WSLBL[s] || s}</span>`;
 }
-
 function renderWarehouse() {
   const overnightItems = WH.filter(w => w.overnight && w.overnight.trim());
   document.getElementById('wh-total').textContent = WH.length;
@@ -1176,20 +1015,13 @@ function renderWarehouse() {
   document.getElementById('wh-overnight').textContent = overnightItems.length;
   document.getElementById('wh-count-all').textContent = WH.length;
   document.getElementById('wh-count-overnight').textContent = overnightItems.length;
-
   const rows = getWhRows();
   const el = document.getElementById('whContainer');
   if (!rows.length) {
-    let msg;
-    if (whSubtab === 'overnight') {
-      msg = 'No overnight holds right now — nothing logged with an overnight reason.';
-    } else {
-      msg = WH.length === 0 ? 'No warehouse entries yet. Click <b>+ Add</b> to log a consignment.' : 'No results match your filter.';
-    }
+    let msg = whSubtab === 'overnight' ? 'No overnight holds right now — nothing logged with an overnight reason.' : WH.length === 0 ? 'No warehouse entries yet. Click <b>+ Add</b> to log a consignment.' : 'No results match your filter.';
     el.innerHTML = `<div class="wh-empty"><div class="wh-empty-sym">⬡</div>${msg}</div>`;
     return;
   }
-
   el.innerHTML = rows.map(w => `
     <div class="wh-card" id="whcard-${w.id}">
       <div class="wh-card-hdr" onclick="toggleWhCard(${w.id})">
@@ -1233,11 +1065,7 @@ function renderWarehouse() {
       </div>
     </div>`).join('');
 }
-
-function toggleWhCard(id) {
-  const body = document.getElementById('whbody-' + id);
-  if (body) body.classList.toggle('open');
-}
+function toggleWhCard(id) { const body = document.getElementById('whbody-' + id); if (body) body.classList.toggle('open'); }
 function setWhStatus(id, st) {
   const w = WH.find(x => x.id === id); if (!w) return;
   w.stat = st;
@@ -1253,10 +1081,7 @@ function addWhLog(id) {
   w.log.push({ d: new Date().toISOString(), t: txt });
   saveWH(); renderWarehouse(); toast('Log entry added.');
 }
-function delWhItem(id) {
-  WH = WH.filter(w => w.id !== id);
-  saveWH(); renderWarehouse(); toast('Removed from warehouse.');
-}
+function delWhItem(id) { WH = WH.filter(w => w.id !== id); saveWH(); renderWarehouse(); toast('Removed from warehouse.'); }
 function toggleWhForm() {
   whFormOpen = !whFormOpen;
   document.getElementById('whFormPanel').classList.toggle('on', whFormOpen);
@@ -1303,9 +1128,7 @@ function exportWarehouseCSV() {
   toast('Warehouse CSV exported.');
 }
 
-// ═══════════════════════════════════════════════
-// FORM
-// ═══════════════════════════════════════════════
+// ── SHIPMENTS FORM ────────────────────────────
 function toggleForm() {
   formOpen = !formOpen;
   document.getElementById('formPanel').classList.toggle('on', formOpen);
@@ -1339,9 +1162,7 @@ function addShipment() {
   save(); clearForm(); cancelForm(); refresh(); toast('Shipment added.');
 }
 
-// ═══════════════════════════════════════════════
-// TABLE
-// ═══════════════════════════════════════════════
+// ── TABLE ─────────────────────────────────────
 function getRows() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   const sf = document.getElementById('filterSel').value;
@@ -1361,7 +1182,12 @@ function getRows() {
     return va < vb ? -sortD : va > vb ? sortD : 0;
   });
 }
-
+function toggleOverdueFilter() {
+  overdueFilter = !overdueFilter;
+  document.getElementById('overdueBtn').style.background = overdueFilter ? '#2a1010' : '';
+  document.getElementById('overdueBtn').style.borderColor = overdueFilter ? '#c04040' : '#4a2020';
+  renderTable();
+}
 function renderTable() {
   updateStats();
   const rows = getRows();
@@ -1399,11 +1225,9 @@ function renderTable() {
   bindDrag();
   document.getElementById('chkAll').checked = rows.length > 0 && rows.every(s => sel.has(s.id));
 }
-
 function rowHTML(s) {
   const ck = sel.has(s.id) ? 'checked' : '';
-  const priHTML = s.pri === 'high' ? `<span class="pri pri-high">High</span>` :
-    s.pri === 'low' ? `<span class="pri pri-low">Low</span>` : `<span class="pri pri-normal">—</span>`;
+  const priHTML = s.pri === 'high' ? `<span class="pri pri-high">High</span>` : s.pri === 'low' ? `<span class="pri pri-low">Low</span>` : `<span class="pri pri-normal">—</span>`;
   const overdue = isOverdue(s);
   const atRisk = isAtRisk(s);
   const days = daysUntilDue(s);
@@ -1433,13 +1257,73 @@ function rowHTML(s) {
   </tr>`;
 }
 
-// ═══════════════════════════════════════════════
-// DRAWER
-// ═══════════════════════════════════════════════
-function maybeOpenDrawer(e, id) {
-  if (e.target.closest('input,button,select,.drag-h')) return;
-  openDrawer(id);
+// ── INLINE EDIT ──────────────────────────────
+function editCell(td, field, id) {
+  const s = DB.find(x => x.id === id); if (!s) return;
+  const old = s[field] || '';
+  td.classList.add('editing');
+  td.innerHTML = `<input class="cell-edit" value="${esc(old)}">`;
+  const inp = td.querySelector('input'); inp.focus(); inp.select();
+  const commit = () => { const nv = inp.value.trim(); if (nv !== old && (field !== 'cons' || nv)) { s[field] = nv; save(); refresh(); } else renderTable(); };
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } if (e.key === 'Escape') renderTable(); });
 }
+function editStatus(td, id) {
+  const s = DB.find(x => x.id === id); if (!s) return;
+  td.classList.add('editing');
+  td.innerHTML = `<select class="cell-edit">${['pending', 'in-transit', 'cleared', 'delivered'].map(v => `<option value="${v}"${s.stat === v ? ' selected' : ''}>${SLBL[v]}</option>`).join('')}</select>`;
+  const sel2 = td.querySelector('select'); sel2.focus();
+  const commit = () => { if (s.stat !== sel2.value) { s.stat = sel2.value; s.history = s.history || []; s.history.push({ d: new Date().toISOString(), t: `Status → ${SLBL[sel2.value]}` }); save(); refresh(); } else renderTable(); };
+  sel2.addEventListener('blur', commit); sel2.addEventListener('change', commit);
+  sel2.addEventListener('keydown', e => { if (e.key === 'Escape') renderTable(); });
+}
+function editPri(td, id) {
+  const s = DB.find(x => x.id === id); if (!s) return;
+  td.classList.add('editing');
+  td.innerHTML = `<select class="cell-edit">${['high', 'normal', 'low'].map(v => `<option value="${v}"${s.pri === v ? ' selected' : ''}>${PLBL[v]}</option>`).join('')}</select>`;
+  const sel2 = td.querySelector('select'); sel2.focus();
+  const commit = () => { s.pri = sel2.value; save(); refresh(); };
+  sel2.addEventListener('blur', commit); sel2.addEventListener('change', commit);
+  sel2.addEventListener('keydown', e => { if (e.key === 'Escape') renderTable(); });
+}
+
+// ── DRAG ─────────────────────────────────────
+function bindDrag() {
+  const tbody = document.getElementById('tbody'); if (!tbody) return;
+  let from = null;
+  tbody.querySelectorAll('tr').forEach((tr, i) => {
+    tr.addEventListener('dragstart', e => { from = i; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+    tr.addEventListener('dragend', () => { tr.classList.remove('dragging'); tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over')); });
+    tr.addEventListener('dragover', e => { e.preventDefault(); tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over')); tr.classList.add('drag-over'); });
+    tr.addEventListener('drop', e => {
+      e.preventDefault();
+      if (from === null || from === i) return;
+      const rows = getRows(), fid = rows[from]?.id, tid = rows[i]?.id;
+      if (!fid || !tid) return;
+      const fi = DB.findIndex(s => s.id === fid), ti = DB.findIndex(s => s.id === tid);
+      const [mv] = DB.splice(fi, 1); DB.splice(ti, 0, mv);
+      save(); renderTable(); from = null;
+    });
+  });
+}
+
+// ── SORT / SELECTION / BULK ──────────────────
+function sortBy(k) { if (sortK === k) sortD *= -1; else { sortK = k; sortD = 1; } renderTable(); }
+function toggleRow(id, checked) { if (checked) sel.add(id); else sel.delete(id); updateBulk(); const tr = document.querySelector(`tr[data-id="${id}"]`); if (tr) tr.classList.toggle('sel', checked); }
+function chkAllRows(checked) { getRows().forEach(s => { if (checked) sel.add(s.id); else sel.delete(s.id); }); renderTable(); updateBulk(); }
+function clearSel() { sel.clear(); updateBulk(); renderTable(); }
+function updateBulk() { const n = sel.size; document.getElementById('bulkBar').classList.toggle('on', n > 0); document.getElementById('bulkCount').textContent = `${n} shipment${n === 1 ? '' : 's'} selected`; }
+function bulkStatus() {
+  const ns = document.getElementById('bulkStatSel').value, np = document.getElementById('bulkPriSel').value;
+  if (!ns && !np) { toast('Choose a status or priority.'); return; }
+  DB.forEach(s => { if (sel.has(s.id)) { if (ns) s.stat = ns; if (np) s.pri = np; } });
+  save(); clearSel(); refresh(); toast('Updated.');
+}
+function bulkDelete() { const n = sel.size; if (!n) return; DB = DB.filter(s => !sel.has(s.id)); save(); clearSel(); refresh(); toast(`${n} shipment${n === 1 ? '' : 's'} deleted.`); }
+function delOne(id) { DB = DB.filter(s => s.id !== id); sel.delete(id); save(); refresh(); toast('Removed.'); }
+
+// ── DRAWER ───────────────────────────────────
+function maybeOpenDrawer(e, id) { if (e.target.closest('input,button,select,.drag-h')) return; openDrawer(id); }
 function openDrawer(id) {
   const s = DB.find(x => x.id === id); if (!s) return;
   drawerID = id;
@@ -1456,8 +1340,7 @@ function closeDrawer() {
 function drawerHTML(s) {
   const overdue = isOverdue(s);
   const days = daysUntilDue(s);
-  const hist = (s.history || []).slice().reverse().map(h => `
-    <div class="hist-item"><span class="hist-date">${fdate(h.d)}</span><span class="hist-txt">${esc(h.t)}</span></div>`).join('');
+  const hist = (s.history || []).slice().reverse().map(h => `<div class="hist-item"><span class="hist-date">${fdate(h.d)}</span><span class="hist-txt">${esc(h.t)}</span></div>`).join('');
   return `
   ${overdue ? `<div style="background:#2a1010;border:1px solid #4a2020;color:#e88888;padding:10px 14px;font-size:11px;margin-bottom:16px;letter-spacing:.04em">⚠ This shipment is <strong>${Math.abs(days)} day${Math.abs(days) !== 1 ? 's' : ''} overdue</strong>. Expected ${s.expectedDate}.</div>` : ''}
   <div class="d-section">
@@ -1501,80 +1384,8 @@ function setStatus(id, st) {
 }
 function priLabel(p) { return p === 'high' ? '<span class="pri pri-high">High</span>' : p === 'low' ? '<span class="pri pri-low">Low</span>' : '<span class="pri pri-normal">Normal</span>'; }
 
-// ═══════════════════════════════════════════════
-// INLINE EDIT
-// ═══════════════════════════════════════════════
-function editCell(td, field, id) {
-  const s = DB.find(x => x.id === id); if (!s) return;
-  const old = s[field] || '';
-  td.classList.add('editing');
-  td.innerHTML = `<input class="cell-edit" value="${esc(old)}">`;
-  const inp = td.querySelector('input'); inp.focus(); inp.select();
-  const commit = () => { const nv = inp.value.trim(); if (nv !== old && (field !== 'cons' || nv)) { s[field] = nv; save(); refresh(); } else renderTable(); };
-  inp.addEventListener('blur', commit);
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } if (e.key === 'Escape') renderTable(); });
-}
-function editStatus(td, id) {
-  const s = DB.find(x => x.id === id); if (!s) return;
-  td.classList.add('editing');
-  td.innerHTML = `<select class="cell-edit">${['pending', 'in-transit', 'cleared', 'delivered'].map(v => `<option value="${v}"${s.stat === v ? ' selected' : ''}>${SLBL[v]}</option>`).join('')}</select>`;
-  const sel2 = td.querySelector('select'); sel2.focus();
-  const commit = () => { if (s.stat !== sel2.value) { s.stat = sel2.value; s.history = s.history || []; s.history.push({ d: new Date().toISOString(), t: `Status → ${SLBL[sel2.value]}` }); save(); refresh(); } else renderTable(); };
-  sel2.addEventListener('blur', commit); sel2.addEventListener('change', commit);
-  sel2.addEventListener('keydown', e => { if (e.key === 'Escape') renderTable(); });
-}
-function editPri(td, id) {
-  const s = DB.find(x => x.id === id); if (!s) return;
-  td.classList.add('editing');
-  td.innerHTML = `<select class="cell-edit">${['high', 'normal', 'low'].map(v => `<option value="${v}"${s.pri === v ? ' selected' : ''}>${PLBL[v]}</option>`).join('')}</select>`;
-  const sel2 = td.querySelector('select'); sel2.focus();
-  const commit = () => { s.pri = sel2.value; save(); refresh(); };
-  sel2.addEventListener('blur', commit); sel2.addEventListener('change', commit);
-  sel2.addEventListener('keydown', e => { if (e.key === 'Escape') renderTable(); });
-}
-
-// ═══════════════════════════════════════════════
-// DRAG TO REORDER
-// ═══════════════════════════════════════════════
-function bindDrag() {
-  const tbody = document.getElementById('tbody'); if (!tbody) return;
-  let from = null;
-  tbody.querySelectorAll('tr').forEach((tr, i) => {
-    tr.addEventListener('dragstart', e => { from = i; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
-    tr.addEventListener('dragend', () => { tr.classList.remove('dragging'); tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over')); });
-    tr.addEventListener('dragover', e => { e.preventDefault(); tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over')); tr.classList.add('drag-over'); });
-    tr.addEventListener('drop', e => {
-      e.preventDefault();
-      if (from === null || from === i) return;
-      const rows = getRows(), fid = rows[from]?.id, tid = rows[i]?.id;
-      if (!fid || !tid) return;
-      const fi = DB.findIndex(s => s.id === fid), ti = DB.findIndex(s => s.id === tid);
-      const [mv] = DB.splice(fi, 1); DB.splice(ti, 0, mv);
-      save(); renderTable(); from = null;
-    });
-  });
-}
-
-// ═══════════════════════════════════════════════
-// SORT + SELECTION + BULK
-// ═══════════════════════════════════════════════
-function sortBy(k) { if (sortK === k) sortD *= -1; else { sortK = k; sortD = 1; } renderTable(); }
-function toggleRow(id, checked) { if (checked) sel.add(id); else sel.delete(id); updateBulk(); const tr = document.querySelector(`tr[data-id="${id}"]`); if (tr) tr.classList.toggle('sel', checked); }
-function chkAllRows(checked) { getRows().forEach(s => { if (checked) sel.add(s.id); else sel.delete(s.id); }); renderTable(); updateBulk(); }
-function clearSel() { sel.clear(); updateBulk(); renderTable(); }
-function updateBulk() { const n = sel.size; document.getElementById('bulkBar').classList.toggle('on', n > 0); document.getElementById('bulkCount').textContent = `${n} shipment${n === 1 ? '' : 's'} selected`; }
-function bulkStatus() {
-  const ns = document.getElementById('bulkStatSel').value, np = document.getElementById('bulkPriSel').value;
-  if (!ns && !np) { toast('Choose a status or priority.'); return; }
-  DB.forEach(s => { if (sel.has(s.id)) { if (ns) s.stat = ns; if (np) s.pri = np; } });
-  save(); clearSel(); refresh(); toast('Updated.');
-}
-function bulkDelete() { const n = sel.size; if (!n) return; DB = DB.filter(s => !sel.has(s.id)); save(); clearSel(); refresh(); toast(`${n} shipment${n === 1 ? '' : 's'} deleted.`); }
-function delOne(id) { DB = DB.filter(s => s.id !== id); sel.delete(id); save(); refresh(); toast('Removed.'); }
-
-// ═══════════════════════════════════════════════
-// IMPORT CSV
-// ═══════════════════════════════════════════════
+// ── IMPORT CSV ───────────────────────────────
+let csvParsed = null, csvHeaders = [];
 function openImport() {
   document.getElementById('importOverlay').classList.add('on');
   document.getElementById('importPreviewWrap').style.display = 'none';
@@ -1655,12 +1466,8 @@ function doImport() {
     const rawCost = getMV('cost', row).replace(/[^0-9.]/g, '');
     const cost = rawCost ? parseFloat(rawCost) : null;
     DB.push({ id: Date.now() + i, cons, sender, orig, receiver, dest, stat, pri,
-      notes: getMV('notes', row),
-      expectedDate,
-      cost,
-      date: now,
-      history: [{ d: now, t: 'Imported from CSV' }]
-    });
+      notes: getMV('notes', row), expectedDate, cost,
+      date: now, history: [{ d: now, t: 'Imported from CSV' }] });
     added++; log.push(`✓ Row ${i + 2}: ${cons}${expectedDate ? ' · due ' + expectedDate : ''}${cost ? ' · R' + cost : ''}`);
   });
   save();
@@ -1670,9 +1477,7 @@ function doImport() {
   setTimeout(closeImport, 2200);
 }
 
-// ═══════════════════════════════════════════════
-// EXPORT
-// ═══════════════════════════════════════════════
+// ── EXPORT ───────────────────────────────────
 function doExport() {
   const rows = getRows(); if (!rows.length) { toast('Nothing to export.'); return; }
   const hdr = ['Consignment', 'Sender', 'Origin', 'Receiver', 'Destination', 'Status', 'Priority', 'Date', 'Expected Delivery', 'Cost (ZAR)', 'Notes'];
@@ -1683,14 +1488,11 @@ function doExport() {
   toast('CSV exported.');
 }
 
-// ═══════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════
+// ── HELPERS ──────────────────────────────────
 function badge(st) { return `<span class="badge b-${st}">${SLBL[st] || st}</span>`; }
 function fdate(iso) { return new Date(iso).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' }); }
 function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2400); }
-
 function refresh() {
   updateStats();
   if (activeTab === 'shipments') renderTable();
@@ -1700,22 +1502,18 @@ function refresh() {
   if (drawerID) openDrawer(drawerID);
 }
 
-// ═══════════════════════════════════════════════
-// KEYBOARD
-// ═══════════════════════════════════════════════
+// ── KEYBOARD ─────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { cancelForm(); clearSel(); closeDrawer(); closeImport(); }
   if (e.key === 'Enter' && formOpen && !['BUTTON', 'SELECT', 'TEXTAREA', 'INPUT'].includes(document.activeElement.tagName)) addShipment();
 });
 
-// ═══════════════════════════════════════════════
-// LOAD DATA (no auth, no demo seeding)
-// ═══════════════════════════════════════════════
+// ── LOAD DATA (NO AUTH, NO SEED) ─────────────
 async function loadData() {
   try {
     const { data: shipRows, error: shipErr } = await sb
       .from('shipments')
-      .select('*')
+      .select()            // ← FIXED: no '*', avoids columns param conflict
       .eq('org_id', currentOrgId)
       .order('created_at', { ascending: false });
     if (shipErr) throw shipErr;
@@ -1728,7 +1526,7 @@ async function loadData() {
 
     const { data: whRows, error: whErr } = await sb
       .from('warehouse_items')
-      .select('*')
+      .select()            // ← FIXED
       .eq('org_id', currentOrgId)
       .order('created_at', { ascending: false });
     if (whErr) throw whErr;
@@ -1737,22 +1535,17 @@ async function loadData() {
       shipRef: r.ship_ref, notes: r.notes, overnight: r.overnight, pickup: r.pickup,
       date: r.created_at, log: r.log || []
     }));
-
-    // No automatic seeding – just show whatever is in the database (even if empty)
+    // NO demo data seeding — simply use whatever the database returned (even empty)
   } catch (e) {
     console.error('loadData error:', e);
     toast('⚠ Could not load data — check your connection.');
-    // Only fall back to localStorage if we have data there; otherwise start fresh
     DB = JSON.parse(localStorage.getItem('stv5') || '[]');
     WH = JSON.parse(localStorage.getItem('wh1') || '[]');
   }
 }
 
-// ═══════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════
+// ── INIT ─────────────────────────────────────
 window.addEventListener('load', async () => {
-  // No auth – load data directly
   DB = JSON.parse(localStorage.getItem('stv5') || '[]');
   WH = JSON.parse(localStorage.getItem('wh1') || '[]');
   geoCache = JSON.parse(localStorage.getItem('geoCache5') || '{}');
