@@ -21,9 +21,12 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
 <style>
-/* CSS unchanged */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#080808;--s1:#0f0f0f;--s2:#151515;--s3:#1c1c1c;
@@ -106,7 +109,6 @@ select{cursor:pointer}
 .field label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
 .field input,.field select,.field textarea{background:var(--bg);border-color:var(--b1)}
 .field textarea{height:38px}
-.f-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--b1)}
 .toolbar{display:flex;align-items:center;gap:9px;margin-bottom:10px;flex-wrap:wrap}
 .tb-search{flex:1;min-width:180px}
 .tbl-wrap{overflow-x:auto}
@@ -562,15 +564,25 @@ td.editing{padding:4px 6px!important}
 
 <script>
 // ═══════════════════════════════════════════════
-// SUPABASE CONFIG
-const SUPABASE_URL = 'https://vbjoazbrwpoydektszzs.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_V2TJE-zR7bq5P-sc1s8ZFA_P2k1qbZ-';
+// FIREBASE CONFIG — REPLACE WITH YOUR OWN
+// ═══════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyDRBrXd0p9PO-W8BIo08nwJxUB4FN1iiXI",
+  authDomain: "opslogger.firebaseapp.com",
+  databaseURL: "https://opslogger-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "opslogger",
+  storageBucket: "opslogger.firebasestorage.app",
+  messagingSenderId: "532332655249",
+  appId: "1:532332655249:web:9e34e0826364b887b3c530",
+  measurementId: "G-M3HZ0M405W"
+};
 
-const sb = (typeof supabase !== 'undefined' && SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('YOUR-PROJECT'))
-  ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-const currentOrgId = '00000000-0000-0000-0000-000000000001';   // shared workspace
+// Enable offline persistence (data caches locally when offline, syncs when back online)
+db.enablePersistence().catch(err => console.warn('Offline persistence failed:', err));
 
 // ── DATA ─────────────────────────────────────
 let DB = [];
@@ -590,66 +602,95 @@ const PLBL = { high: 'High', normal: 'Normal', low: 'Low' };
 let geoCache = {};
 let geoQueue = [], geoRunning = false;
 
-// ── SAVE ──────────────────────────────────────
+// ── SAVE SHIPMENT TO FIRESTORE ────────────────
+async function saveShipmentToFirestore(s) {
+  try {
+    const doc = {
+      cons: s.cons,
+      sender: s.sender,
+      orig: s.orig,
+      receiver: s.receiver,
+      dest: s.dest,
+      stat: s.stat,
+      pri: s.pri,
+      notes: s.notes || '',
+      expectedDate: s.expectedDate || null,
+      cost: s.cost || null,
+      date: s.date,
+      history: s.history || []
+    };
+    if (s.firestoreId) {
+      await db.collection('shipments').doc(s.firestoreId).set(doc);
+    } else {
+      const ref = await db.collection('shipments').add(doc);
+      s.firestoreId = ref.id;
+    }
+  } catch (e) {
+    console.error('Firestore save error:', e);
+    toast('⚠ Sync failed — saved locally only.');
+  }
+}
+
+async function deleteShipmentFromFirestore(firestoreId) {
+  if (!firestoreId) return;
+  try {
+    await db.collection('shipments').doc(firestoreId).delete();
+  } catch (e) {
+    console.error('Firestore delete error:', e);
+  }
+}
+
+// ── SAVE WAREHOUSE ITEM TO FIRESTORE ──────────
+async function saveWhToFirestore(w) {
+  try {
+    const doc = {
+      cons: w.cons,
+      desc: w.desc,
+      qty: w.qty,
+      boxes: w.boxes || '',
+      loc: w.loc,
+      stat: w.stat,
+      shipRef: w.shipRef || '',
+      notes: w.notes || '',
+      overnight: w.overnight || '',
+      pickup: w.pickup || null,
+      date: w.date,
+      log: w.log || []
+    };
+    if (w.firestoreId) {
+      await db.collection('warehouse').doc(w.firestoreId).set(doc);
+    } else {
+      const ref = await db.collection('warehouse').add(doc);
+      w.firestoreId = ref.id;
+    }
+  } catch (e) {
+    console.error('Firestore WH save error:', e);
+    toast('⚠ Sync failed — saved locally only.');
+  }
+}
+
+async function deleteWhFromFirestore(firestoreId) {
+  if (!firestoreId) return;
+  try {
+    await db.collection('warehouse').doc(firestoreId).delete();
+  } catch (e) {
+    console.error('Firestore WH delete error:', e);
+  }
+}
+
+// ── SAVE (called after every change) ──────────
 async function save() {
   localStorage.setItem('stv5', JSON.stringify(DB));
-  if (!sb) return;
-  try {
-    const rows = DB.map(s => ({
-      id: s.id > 1e12 ? undefined : s.id,
-      org_id: currentOrgId,
-      cons: s.cons, sender: s.sender, orig: s.orig, receiver: s.receiver, dest: s.dest,
-      stat: s.stat, pri: s.pri, notes: s.notes,
-      expected_date: s.expectedDate || null, cost: s.cost || null,
-      created_at: s.date, history: s.history || []
-    }));
-    const toInsert = rows.filter(r => r.id === undefined);
-    const toUpdate = rows.filter(r => r.id !== undefined);
-    if (toUpdate.length) await sb.from('shipments').upsert(toUpdate);
-    if (toInsert.length) {
-      const { data, error } = await sb.from('shipments').insert(toInsert).select(); // FIXED
-      if (!error && data) {
-        data.forEach((row) => {
-          const tempRow = DB.find(s => s.cons === row.cons && s.id > 1e12);
-          if (tempRow) tempRow.id = row.id;
-        });
-      }
-    }
-    const localIds = DB.filter(s => s.id < 1e12).map(s => s.id);
-    if (localIds.length) {
-      await sb.from('shipments').delete().eq('org_id', currentOrgId).not('id', 'in', `(${localIds.join(',')})`);
-    }
-  } catch (e) { console.error('save error', e); toast('⚠ Sync failed'); }
+  for (const s of DB) {
+    await saveShipmentToFirestore(s);
+  }
 }
 
 async function saveWH() {
   localStorage.setItem('wh1', JSON.stringify(WH));
-  if (!sb) return;
-  try {
-    const rows = WH.map(w => ({
-      id: w.id > 1e12 ? undefined : w.id,
-      org_id: currentOrgId,
-      cons: w.cons, "desc": w.desc, qty: w.qty, boxes: w.boxes, loc: w.loc, stat: w.stat,
-      ship_ref: w.shipRef || null, notes: w.notes, overnight: w.overnight || null,
-      pickup: w.pickup || null, created_at: w.date, log: w.log || []
-    }));
-    const toInsert = rows.filter(r => r.id === undefined);
-    const toUpdate = rows.filter(r => r.id !== undefined);
-    if (toUpdate.length) await sb.from('warehouse_items').upsert(toUpdate);
-    if (toInsert.length) {
-      const { data, error } = await sb.from('warehouse_items').insert(toInsert).select(); // FIXED
-      if (!error && data) {
-        data.forEach(row => {
-          const tempRow = WH.find(w => w.cons === row.cons && w.id > 1e12);
-          if (tempRow) tempRow.id = row.id;
-        });
-      }
-    }
-    const localIds = WH.filter(w => w.id < 1e12).map(w => w.id);
-    if (localIds.length) {
-      await sb.from('warehouse_items').delete().eq('org_id', currentOrgId).not('id', 'in', `(${localIds.join(',')})`);
-    }
-  } catch (e) { console.error('saveWH error', e); toast('⚠ Sync failed'); }
+  for (const w of WH) {
+    await saveWhToFirestore(w);
+  }
 }
 
 // ── THEME ─────────────────────────────────────
@@ -679,34 +720,16 @@ async function processGeoQueue() {
   while (geoQueue.length) {
     const { k, name, resolve } = geoQueue.shift();
     if (k in geoCache) { resolve(geoCache[k]); continue; }
-    if (sb) {
-      try {
-        const { data } = await sb.from('geocode_cache').select('lat,lng').eq('org_id', currentOrgId).eq('city_key', k).maybeSingle();
-        if (data) {
-          geoCache[k] = (data.lat != null && data.lng != null) ? [data.lat, data.lng] : null;
-          resolve(geoCache[k]); continue;
-        }
-      } catch {}
-    }
     try {
-      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=1`, { headers: { 'Accept-Language': 'en', 'User-Agent': 'ShipmentTracker/2.0' } });
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=1`, { headers: { 'Accept-Language': 'en', 'User-Agent': 'ShipmentTracker/3.0' } });
       const d = await r.json();
       geoCache[k] = d.length ? [parseFloat(d[0].lat), parseFloat(d[0].lon)] : null;
-      saveGeo(k);
+      localStorage.setItem('geoCache5', JSON.stringify(geoCache));
       resolve(geoCache[k]);
-    } catch { geoCache[k] = null; saveGeo(k); resolve(null); }
+    } catch { geoCache[k] = null; resolve(null); }
     await new Promise(r => setTimeout(r, 320));
   }
   geoRunning = false;
-}
-function saveGeo(k) {
-  const all = JSON.parse(localStorage.getItem('geoCache5') || '{}');
-  all[k] = geoCache[k];
-  localStorage.setItem('geoCache5', JSON.stringify(all));
-  if (sb) {
-    const coord = geoCache[k];
-    sb.from('geocode_cache').upsert({ org_id: currentOrgId, city_key: k, lat: coord ? coord[0] : null, lng: coord ? coord[1] : null }).then(() => {}).catch(() => {});
-  }
 }
 
 // ── TABS ──────────────────────────────────────
@@ -748,7 +771,6 @@ function calcKPIs() {
   const withDate = DB.filter(s => s.expectedDate);
   const onTime = delivered.filter(s => s.expectedDate && new Date(s.date) < new Date(s.expectedDate)).length;
   const overdue = DB.filter(isOverdue).length;
-  const avgCost = DB.filter(s => s.cost).length > 0 ? (DB.filter(s => s.cost).reduce((a, b) => a + (b.cost || 0), 0) / DB.filter(s => s.cost).length).toFixed(0) : 0;
   let avgWHDays = 0;
   if (WH.filter(w => w.stat !== 'dispatched').length > 0) {
     const whDays = WH.filter(w => w.stat !== 'dispatched').map(w => {
@@ -757,7 +779,7 @@ function calcKPIs() {
     });
     avgWHDays = (whDays.reduce((a, b) => a + b, 0) / whDays.length).toFixed(1);
   }
-  return { onTimePercent: withDate.length > 0 ? Math.round((onTime / withDate.length) * 100) : 0, avgWHDays: parseFloat(avgWHDays), overdueCount: overdue, avgCost: parseInt(avgCost) };
+  return { onTimePercent: withDate.length > 0 ? Math.round((onTime / withDate.length) * 100) : 0, avgWHDays: parseFloat(avgWHDays), overdueCount: overdue };
 }
 function updateAlert() {
   const kpis = calcKPIs();
@@ -1081,7 +1103,12 @@ function addWhLog(id) {
   w.log.push({ d: new Date().toISOString(), t: txt });
   saveWH(); renderWarehouse(); toast('Log entry added.');
 }
-function delWhItem(id) { WH = WH.filter(w => w.id !== id); saveWH(); renderWarehouse(); toast('Removed from warehouse.'); }
+function delWhItem(id) {
+  const w = WH.find(x => x.id === id);
+  if (w && w.firestoreId) deleteWhFromFirestore(w.firestoreId);
+  WH = WH.filter(w => w.id !== id);
+  saveWH(); renderWarehouse(); toast('Removed from warehouse.');
+}
 function toggleWhForm() {
   whFormOpen = !whFormOpen;
   document.getElementById('whFormPanel').classList.toggle('on', whFormOpen);
@@ -1103,8 +1130,10 @@ function addWhItem() {
   if (!cons || !desc) { toast('Consignment and description are required.'); return; }
   const now = new Date().toISOString();
   const overnight = document.getElementById('wf-overnight').value.trim();
-  WH.push({
-    id: Date.now(), cons, desc,
+  const item = {
+    id: Date.now(),
+    firestoreId: null,
+    cons, desc,
     qty: qty || '—',
     boxes: document.getElementById('wf-boxes').value.trim(),
     loc: document.getElementById('wf-loc').value,
@@ -1115,8 +1144,12 @@ function addWhItem() {
     pickup: document.getElementById('wf-pickup').value,
     date: now,
     log: [{ d: now, t: 'Logged into warehouse' + (overnight ? ` — overnight: ${overnight}` : '') }]
+  };
+  WH.push(item);
+  saveWhToFirestore(item).then(() => {
+    localStorage.setItem('wh1', JSON.stringify(WH));
   });
-  saveWH(); cancelWhForm(); renderWarehouse(); toast('Warehouse entry added.');
+  cancelWhForm(); renderWarehouse(); toast('Warehouse entry added.');
 }
 function exportWarehouseCSV() {
   const rows = getWhRows(); if (!rows.length) { toast('Nothing to export.'); return; }
@@ -1152,14 +1185,23 @@ function addShipment() {
   if (!sender || !orig || !receiver || !dest || !cons) { toast('All fields except notes are required.'); return; }
   const now = new Date().toISOString();
   const cost = parseFloat(document.getElementById('f-cost').value) || null;
-  DB.push({ id: Date.now(), cons, sender, orig, receiver, dest,
+  const shipment = {
+    id: Date.now(),
+    firestoreId: null,
+    cons, sender, orig, receiver, dest,
     stat: document.getElementById('f-stat').value,
     pri: document.getElementById('f-pri').value,
     notes: gv('f-notes'),
     expectedDate: document.getElementById('f-expdate').value || null,
     cost,
-    date: now, history: [{ d: now, t: 'Created' }] });
-  save(); clearForm(); cancelForm(); refresh(); toast('Shipment added.');
+    date: now,
+    history: [{ d: now, t: 'Created' }]
+  };
+  DB.push(shipment);
+  saveShipmentToFirestore(shipment).then(() => {
+    localStorage.setItem('stv5', JSON.stringify(DB));
+  });
+  clearForm(); cancelForm(); refresh(); toast('Shipment added.');
 }
 
 // ── TABLE ─────────────────────────────────────
@@ -1264,7 +1306,7 @@ function editCell(td, field, id) {
   td.classList.add('editing');
   td.innerHTML = `<input class="cell-edit" value="${esc(old)}">`;
   const inp = td.querySelector('input'); inp.focus(); inp.select();
-  const commit = () => { const nv = inp.value.trim(); if (nv !== old && (field !== 'cons' || nv)) { s[field] = nv; save(); refresh(); } else renderTable(); };
+  const commit = () => { const nv = inp.value.trim(); if (nv !== old && (field !== 'cons' || nv)) { s[field] = nv; saveShipmentToFirestore(s); refresh(); } else renderTable(); };
   inp.addEventListener('blur', commit);
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } if (e.key === 'Escape') renderTable(); });
 }
@@ -1273,7 +1315,7 @@ function editStatus(td, id) {
   td.classList.add('editing');
   td.innerHTML = `<select class="cell-edit">${['pending', 'in-transit', 'cleared', 'delivered'].map(v => `<option value="${v}"${s.stat === v ? ' selected' : ''}>${SLBL[v]}</option>`).join('')}</select>`;
   const sel2 = td.querySelector('select'); sel2.focus();
-  const commit = () => { if (s.stat !== sel2.value) { s.stat = sel2.value; s.history = s.history || []; s.history.push({ d: new Date().toISOString(), t: `Status → ${SLBL[sel2.value]}` }); save(); refresh(); } else renderTable(); };
+  const commit = () => { if (s.stat !== sel2.value) { s.stat = sel2.value; s.history = s.history || []; s.history.push({ d: new Date().toISOString(), t: `Status → ${SLBL[sel2.value]}` }); saveShipmentToFirestore(s); refresh(); } else renderTable(); };
   sel2.addEventListener('blur', commit); sel2.addEventListener('change', commit);
   sel2.addEventListener('keydown', e => { if (e.key === 'Escape') renderTable(); });
 }
@@ -1282,7 +1324,7 @@ function editPri(td, id) {
   td.classList.add('editing');
   td.innerHTML = `<select class="cell-edit">${['high', 'normal', 'low'].map(v => `<option value="${v}"${s.pri === v ? ' selected' : ''}>${PLBL[v]}</option>`).join('')}</select>`;
   const sel2 = td.querySelector('select'); sel2.focus();
-  const commit = () => { s.pri = sel2.value; save(); refresh(); };
+  const commit = () => { s.pri = sel2.value; saveShipmentToFirestore(s); refresh(); };
   sel2.addEventListener('blur', commit); sel2.addEventListener('change', commit);
   sel2.addEventListener('keydown', e => { if (e.key === 'Escape') renderTable(); });
 }
@@ -1319,8 +1361,20 @@ function bulkStatus() {
   DB.forEach(s => { if (sel.has(s.id)) { if (ns) s.stat = ns; if (np) s.pri = np; } });
   save(); clearSel(); refresh(); toast('Updated.');
 }
-function bulkDelete() { const n = sel.size; if (!n) return; DB = DB.filter(s => !sel.has(s.id)); save(); clearSel(); refresh(); toast(`${n} shipment${n === 1 ? '' : 's'} deleted.`); }
-function delOne(id) { DB = DB.filter(s => s.id !== id); sel.delete(id); save(); refresh(); toast('Removed.'); }
+function bulkDelete() {
+  const n = sel.size; if (!n) return;
+  const toDelete = DB.filter(s => sel.has(s.id));
+  toDelete.forEach(s => { if (s.firestoreId) deleteShipmentFromFirestore(s.firestoreId); });
+  DB = DB.filter(s => !sel.has(s.id));
+  save(); clearSel(); refresh(); toast(`${n} shipment${n === 1 ? '' : 's'} deleted.`);
+}
+function delOne(id) {
+  const s = DB.find(x => x.id === id);
+  if (s && s.firestoreId) deleteShipmentFromFirestore(s.firestoreId);
+  DB = DB.filter(s => s.id !== id);
+  sel.delete(id);
+  save(); refresh(); toast('Removed.');
+}
 
 // ── DRAWER ───────────────────────────────────
 function maybeOpenDrawer(e, id) { if (e.target.closest('input,button,select,.drag-h')) return; openDrawer(id); }
@@ -1380,7 +1434,7 @@ function setStatus(id, st) {
   s.stat = st;
   s.history = s.history || [];
   s.history.push({ d: new Date().toISOString(), t: `Status → ${SLBL[st]}` });
-  save(); refresh(); openDrawer(id); toast('Status updated.');
+  saveShipmentToFirestore(s); refresh(); openDrawer(id); toast('Status updated.');
 }
 function priLabel(p) { return p === 'high' ? '<span class="pri pri-high">High</span>' : p === 'low' ? '<span class="pri pri-low">Low</span>' : '<span class="pri pri-normal">Normal</span>'; }
 
@@ -1447,10 +1501,10 @@ function parseCSVText(txt) {
   document.getElementById('doImportBtn').style.display = 'inline-block';
 }
 function getMV(f, row) { const s = document.getElementById(`map-${f}`); return s && s.value !== '' ? (row[parseInt(s.value)] || '').trim() : ''; }
-function doImport() {
+async function doImport() {
   if (!csvParsed) { toast('No CSV loaded.'); return; }
   let added = 0; const log = [];
-  csvParsed.forEach((row, i) => {
+  for (const [i, row] of csvParsed.entries()) {
     const cons = getMV('cons', row) || `IMP-${Date.now()}-${i}`;
     const sender = getMV('sender', row) || 'Unknown';
     const orig = getMV('orig', row) || 'Unknown';
@@ -1465,12 +1519,19 @@ function doImport() {
     const expectedDate = rawExpDate || null;
     const rawCost = getMV('cost', row).replace(/[^0-9.]/g, '');
     const cost = rawCost ? parseFloat(rawCost) : null;
-    DB.push({ id: Date.now() + i, cons, sender, orig, receiver, dest, stat, pri,
+    const shipment = {
+      id: Date.now() + i,
+      firestoreId: null,
+      cons, sender, orig, receiver, dest, stat, pri,
       notes: getMV('notes', row), expectedDate, cost,
-      date: now, history: [{ d: now, t: 'Imported from CSV' }] });
+      date: now,
+      history: [{ d: now, t: 'Imported from CSV' }]
+    };
+    DB.push(shipment);
+    await saveShipmentToFirestore(shipment);
     added++; log.push(`✓ Row ${i + 2}: ${cons}${expectedDate ? ' · due ' + expectedDate : ''}${cost ? ' · R' + cost : ''}`);
-  });
-  save();
+  }
+  localStorage.setItem('stv5', JSON.stringify(DB));
   const logEl = document.getElementById('importLog'); logEl.style.display = 'block'; logEl.innerHTML = log.join('<br>');
   document.getElementById('doImportBtn').style.display = 'none';
   refresh(); toast(`${added} shipment${added === 1 ? '' : 's'} imported.`);
@@ -1508,40 +1569,124 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && formOpen && !['BUTTON', 'SELECT', 'TEXTAREA', 'INPUT'].includes(document.activeElement.tagName)) addShipment();
 });
 
-// ── LOAD DATA (NO AUTH, NO SEED) ─────────────
+// ── LOAD DATA FROM FIRESTORE ─────────────────
 async function loadData() {
   try {
-    const { data: shipRows, error: shipErr } = await sb
-      .from('shipments')
-      .select()            // ← FIXED: no '*'
-      .eq('org_id', currentOrgId)
-      .order('created_at', { ascending: false });
-    if (shipErr) throw shipErr;
-    DB = (shipRows || []).map(r => ({
-      id: r.id, cons: r.cons, sender: r.sender, orig: r.orig, receiver: r.receiver, dest: r.dest,
-      stat: r.stat, pri: r.pri, notes: r.notes,
-      expectedDate: r.expected_date, cost: r.cost,
-      date: r.created_at, history: r.history || []
-    }));
+    // Load shipments
+    const shipSnap = await db.collection('shipments').get();
+    DB = [];
+    shipSnap.forEach(doc => {
+      const r = doc.data();
+      DB.push({
+        id: r.date ? new Date(r.date).getTime() : Date.now(),
+        firestoreId: doc.id,
+        cons: r.cons, sender: r.sender, orig: r.orig, receiver: r.receiver, dest: r.dest,
+        stat: r.stat, pri: r.pri, notes: r.notes || '',
+        expectedDate: r.expectedDate || null, cost: r.cost || null,
+        date: r.date, history: r.history || []
+      });
+    });
+    DB.sort((a, b) => new Date(b.date) - new Date(a.date));
+    localStorage.setItem('stv5', JSON.stringify(DB));
 
-    const { data: whRows, error: whErr } = await sb
-      .from('warehouse_items')
-      .select()            // ← FIXED: no '*'
-      .eq('org_id', currentOrgId)
-      .order('created_at', { ascending: false });
-    if (whErr) throw whErr;
-    WH = (whRows || []).map(r => ({
-      id: r.id, cons: r.cons, desc: r.desc, qty: r.qty, boxes: r.boxes, loc: r.loc, stat: r.stat,
-      shipRef: r.ship_ref, notes: r.notes, overnight: r.overnight, pickup: r.pickup,
-      date: r.created_at, log: r.log || []
-    }));
-    // NO demo data seeding — simply use whatever the database returned (even empty)
+    // Load warehouse items
+    const whSnap = await db.collection('warehouse').get();
+    WH = [];
+    whSnap.forEach(doc => {
+      const r = doc.data();
+      WH.push({
+        id: r.date ? new Date(r.date).getTime() : Date.now(),
+        firestoreId: doc.id,
+        cons: r.cons, desc: r.desc, qty: r.qty, boxes: r.boxes || '', loc: r.loc, stat: r.stat,
+        shipRef: r.shipRef || '', notes: r.notes || '', overnight: r.overnight || '',
+        pickup: r.pickup || null, date: r.date, log: r.log || []
+      });
+    });
+    WH.sort((a, b) => new Date(b.date) - new Date(a.date));
+    localStorage.setItem('wh1', JSON.stringify(WH));
   } catch (e) {
     console.error('loadData error:', e);
     toast('⚠ Could not load data — check your connection.');
     DB = JSON.parse(localStorage.getItem('stv5') || '[]');
     WH = JSON.parse(localStorage.getItem('wh1') || '[]');
   }
+}
+
+// ── REAL-TIME LISTENERS ──────────────────────
+function setupRealtimeListeners() {
+  // Listen for shipment changes
+  db.collection('shipments').onSnapshot(snapshot => {
+    let changed = false;
+    snapshot.docChanges().forEach(change => {
+      const doc = change.doc;
+      const r = doc.data();
+      const existingIdx = DB.findIndex(s => s.firestoreId === doc.id);
+      if (change.type === 'added' && existingIdx === -1) {
+        DB.push({
+          id: r.date ? new Date(r.date).getTime() : Date.now(),
+          firestoreId: doc.id,
+          cons: r.cons, sender: r.sender, orig: r.orig, receiver: r.receiver, dest: r.dest,
+          stat: r.stat, pri: r.pri, notes: r.notes || '',
+          expectedDate: r.expectedDate || null, cost: r.cost || null,
+          date: r.date, history: r.history || []
+        });
+        changed = true;
+      } else if (change.type === 'modified' && existingIdx !== -1) {
+        DB[existingIdx] = {
+          ...DB[existingIdx],
+          cons: r.cons, sender: r.sender, orig: r.orig, receiver: r.receiver, dest: r.dest,
+          stat: r.stat, pri: r.pri, notes: r.notes || '',
+          expectedDate: r.expectedDate || null, cost: r.cost || null,
+          date: r.date, history: r.history || []
+        };
+        changed = true;
+      } else if (change.type === 'removed' && existingIdx !== -1) {
+        DB.splice(existingIdx, 1);
+        changed = true;
+      }
+    });
+    if (changed) {
+      DB.sort((a, b) => new Date(b.date) - new Date(a.date));
+      localStorage.setItem('stv5', JSON.stringify(DB));
+      refresh();
+    }
+  });
+
+  // Listen for warehouse changes
+  db.collection('warehouse').onSnapshot(snapshot => {
+    let changed = false;
+    snapshot.docChanges().forEach(change => {
+      const doc = change.doc;
+      const r = doc.data();
+      const existingIdx = WH.findIndex(w => w.firestoreId === doc.id);
+      if (change.type === 'added' && existingIdx === -1) {
+        WH.push({
+          id: r.date ? new Date(r.date).getTime() : Date.now(),
+          firestoreId: doc.id,
+          cons: r.cons, desc: r.desc, qty: r.qty, boxes: r.boxes || '', loc: r.loc, stat: r.stat,
+          shipRef: r.shipRef || '', notes: r.notes || '', overnight: r.overnight || '',
+          pickup: r.pickup || null, date: r.date, log: r.log || []
+        });
+        changed = true;
+      } else if (change.type === 'modified' && existingIdx !== -1) {
+        WH[existingIdx] = {
+          ...WH[existingIdx],
+          cons: r.cons, desc: r.desc, qty: r.qty, boxes: r.boxes || '', loc: r.loc, stat: r.stat,
+          shipRef: r.shipRef || '', notes: r.notes || '', overnight: r.overnight || '',
+          pickup: r.pickup || null, date: r.date, log: r.log || []
+        };
+        changed = true;
+      } else if (change.type === 'removed' && existingIdx !== -1) {
+        WH.splice(existingIdx, 1);
+        changed = true;
+      }
+    });
+    if (changed) {
+      WH.sort((a, b) => new Date(b.date) - new Date(a.date));
+      localStorage.setItem('wh1', JSON.stringify(WH));
+      refresh();
+    }
+  });
 }
 
 // ── INIT ─────────────────────────────────────
@@ -1551,7 +1696,9 @@ window.addEventListener('load', async () => {
   geoCache = JSON.parse(localStorage.getItem('geoCache5') || '{}');
   document.getElementById('appShell').classList.add('on');
   document.getElementById('userEmail').textContent = 'Team workspace';
+  
   await loadData();
+  setupRealtimeListeners();
   updateStats();
   renderCharts();
 });
