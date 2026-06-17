@@ -1,13 +1,12 @@
 // Shipment Tracker — Service Worker
 // Bump CACHE_NAME on every deploy to force-refresh cached assets.
-const CACHE_NAME = 'shipment-tracker-v2';
+const CACHE_NAME = 'shipment-tracker-v3';
 
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icons/icon-192.png',
-  './icons/icon-512.png',
   './icons/apple-touch-icon.png',
   './icons/favicon.ico'
 ];
@@ -16,7 +15,16 @@ const ASSETS = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
+      .then(cache => {
+        // Use addAll but catch individual failures so one missing file doesn't break everything
+        return Promise.allSettled(
+          ASSETS.map(asset => 
+            cache.add(asset).catch(err => {
+              console.warn('Service worker: failed to cache', asset, err);
+            })
+          )
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });
@@ -30,15 +38,16 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch — cache-first for app shell, network-first for everything else (so
-// live geocoding / map-tile / TopoJSON requests stay fresh when online,
-// but the app still loads offline using last-cached responses).
+// Fetch — cache-first for app shell, network-first for external requests
 self.addEventListener('fetch', event => {
   const req = event.request;
   const url = new URL(req.url);
 
   // Only handle GET requests
   if (req.method !== 'GET') return;
+
+  // Skip Supabase API requests — never cache these
+  if (url.hostname.includes('supabase.co')) return;
 
   // App shell — cache-first
   if (url.origin === self.location.origin) {
