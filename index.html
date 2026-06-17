@@ -186,27 +186,6 @@ td.editing{padding:4px 6px!important}
 .city-label{font-family:'DM Mono',monospace;font-size:9px;fill:var(--t2)}
 .arc-dot{pointer-events:none}
 
-/* ── AUTH SCREEN ─────────────────────────────── */
-#authScreen{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
-#authScreen.hidden{display:none}
-.auth-box{width:380px;max-width:100%}
-.auth-logo{display:flex;align-items:baseline;gap:14px;margin-bottom:36px;justify-content:center}
-.auth-title{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:6px}
-.auth-sub{font-size:12px;color:var(--t2);margin-bottom:28px;line-height:1.6}
-.auth-field{margin-bottom:14px}
-.auth-field label{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:6px}
-.auth-tabs{display:flex;border-bottom:1px solid var(--b1);margin-bottom:28px}
-.auth-tab{flex:1;background:none;border:none;border-bottom:1px solid transparent;margin-bottom:-1px;padding:11px 0;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);cursor:pointer;transition:color .12s}
-.auth-tab.on{color:var(--t1);border-bottom-color:var(--t1)}
-.auth-err{font-size:11px;color:#e88888;background:#2a1010;border:1px solid #4a2020;padding:9px 12px;margin-bottom:14px;display:none}
-.auth-err.on{display:block}
-.auth-loading{display:none;text-align:center;font-size:11px;color:var(--t3);letter-spacing:.05em;margin-top:14px}
-.auth-loading.on{display:block}
-#appShell{display:none}
-#appShell.on{display:block}
-.user-menu{display:flex;align-items:center;gap:10px}
-.user-email{font-size:11px;color:var(--t3)}
-
 /* ── ALERTS ──────────────────────────────────── */
 .alert-banner{position:fixed;top:0;left:0;right:0;background:#2a1010;border-bottom:1px solid #4a2020;color:#e88888;padding:12px 30px;font-size:12px;letter-spacing:.05em;z-index:200;display:none;text-align:center}
 .alert-banner.on{display:block;animation:slideDown .3s ease}
@@ -330,44 +309,6 @@ td.editing{padding:4px 6px!important}
 </head>
 <body data-theme="dark">
 
-<!-- ══ AUTH SCREEN ════════════════════════════ -->
-<div id="authScreen">
-  <div class="auth-box">
-    <div class="auth-logo">
-      <span class="wordmark">Freight</span>
-      <h1 class="app-title" style="font-size:18px">Shipment Tracker</h1>
-    </div>
-
-    <div class="auth-tabs">
-      <button class="auth-tab on" id="authTabLogin" onclick="setAuthMode('login')">Sign In</button>
-      <button class="auth-tab" id="authTabSignup" onclick="setAuthMode('signup')">Create Account</button>
-    </div>
-
-    <div class="auth-err" id="authErr"></div>
-
-    <div class="auth-field" id="authNameField" style="display:none">
-      <label>Full Name</label>
-      <input type="text" id="authName" placeholder="Jane Smith">
-    </div>
-    <div class="auth-field">
-      <label>Email</label>
-      <input type="text" id="authEmail" placeholder="you@company.com" autocomplete="username">
-    </div>
-    <div class="auth-field">
-      <label>Password</label>
-      <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
-    </div>
-
-    <button class="btn btn-p" id="authSubmitBtn" style="width:100%;padding:12px" onclick="submitAuth()">Sign In</button>
-    <div class="auth-loading" id="authLoading">Connecting…</div>
-
-    <div style="font-size:10px;color:var(--t3);text-align:center;margin-top:20px;line-height:1.6">
-      Your data is private to your organization.<br>New accounts automatically create a new workspace.
-    </div>
-  </div>
-</div>
-
-<!-- ══ MAIN APP ═══════════════════════════════ -->
 <div id="appShell">
 <div class="wrap">
 
@@ -381,11 +322,8 @@ td.editing{padding:4px 6px!important}
   </div>
   <div class="header-right">
     <span class="header-meta" id="hMeta">—</span>
-    <div class="user-menu">
-      <span class="user-email" id="userEmail"></span>
-      <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀ Light</button>
-      <button class="theme-btn" onclick="signOut()">Sign Out</button>
-    </div>
+    <span class="user-email" id="userEmail">Team workspace</span>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀ Light</button>
   </div>
 </header>
 
@@ -678,692 +616,618 @@ td.editing{padding:4px 6px!important}
 
 <script>
 // ═══════════════════════════════════════════════
-// SUPABASE CONFIG — replace with your project's values
-// (Settings → API in your Supabase dashboard)
+// SUPABASE CONFIG — REPLACE WITH YOUR PROJECT DETAILS
 // ═══════════════════════════════════════════════
 const SUPABASE_URL = 'https://vbjoazbrwpoydektszzs.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_V2TJE-zR7bq5P-sc1s8ZFA_P2k1qbZ-';
 
-const sb = (typeof supabase!=='undefined' && SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('YOUR-PROJECT'))
+const sb = (typeof supabase !== 'undefined' && SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('YOUR-PROJECT'))
   ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
-let currentUser=null, currentOrgId=null;
+// No authentication – everyone uses the same shared workspace
+const currentOrgId = '00000000-0000-0000-0000-000000000001';  // Hardcoded org id
+
+let DB = [];
+let WH = [];
+let sel = new Set();
+let sortK = 'date', sortD = -1;
+let overdueFilter = false;
+let drawerID = null;
+let formOpen = false, activeTab = 'overview';
+
+const SO = { pending: 0, 'in-transit': 1, cleared: 2, delivered: 3 };
+const SLBL = { pending: 'Pending', 'in-transit': 'In Transit', cleared: 'Cleared', delivered: 'Delivered' };
+const SCOL = { pending: '#383838', 'in-transit': '#585858', cleared: '#888', delivered: '#d8d8d8' };
+const ARCOL = { pending: '#484848', 'in-transit': '#787878', cleared: '#aaaaaa', delivered: '#f0f0f0' };
+const PLBL = { high: 'High', normal: 'Normal', low: 'Low' };
+
+let geoCache = {};
+let geoQueue = [], geoRunning = false;
+
+// ── SAVE / SYNC ──────────────────────────────────
+async function save() {
+  localStorage.setItem('stv5', JSON.stringify(DB));   // local fallback cache
+  if (!sb) return;
+  try {
+    const rows = DB.map(s => ({
+      id: s.id > 1e12 ? undefined : s.id,   // large id = temp, let DB assign
+      org_id: currentOrgId,
+      cons: s.cons, sender: s.sender, orig: s.orig, receiver: s.receiver, dest: s.dest,
+      stat: s.stat, pri: s.pri, notes: s.notes,
+      expected_date: s.expectedDate || null, cost: s.cost || null,
+      created_at: s.date, history: s.history || []
+    }));
+    const toInsert = rows.filter(r => r.id === undefined);
+    const toUpdate = rows.filter(r => r.id !== undefined);
+    if (toUpdate.length) await sb.from('shipments').upsert(toUpdate);
+    if (toInsert.length) {
+      const { data, error } = await sb.from('shipments').insert(toInsert).select();
+      if (!error && data) {
+        data.forEach((row, i) => {
+          const tempRow = DB.find(s => s.cons === row.cons && s.id > 1e12);
+          if (tempRow) tempRow.id = row.id;
+        });
+      }
+    }
+    // Delete rows on server that no longer exist locally
+    const localIds = DB.filter(s => s.id < 1e12).map(s => s.id);
+    if (localIds.length) {
+      await sb.from('shipments').delete().eq('org_id', currentOrgId).not('id', 'in', `(${localIds.join(',')})`);
+    }
+  } catch (e) {
+    console.error('save() sync error:', e);
+    toast('⚠ Sync failed — changes saved locally only.');
+  }
+}
+
+async function saveWH() {
+  localStorage.setItem('wh1', JSON.stringify(WH));   // local fallback cache
+  if (!sb) return;
+  try {
+    const rows = WH.map(w => ({
+      id: w.id > 1e12 ? undefined : w.id,
+      org_id: currentOrgId,
+      cons: w.cons, "desc": w.desc, qty: w.qty, boxes: w.boxes, loc: w.loc, stat: w.stat,
+      ship_ref: w.shipRef || null, notes: w.notes, overnight: w.overnight || null,
+      pickup: w.pickup || null, created_at: w.date, log: w.log || []
+    }));
+    const toInsert = rows.filter(r => r.id === undefined);
+    const toUpdate = rows.filter(r => r.id !== undefined);
+    if (toUpdate.length) await sb.from('warehouse_items').upsert(toUpdate);
+    if (toInsert.length) {
+      const { data, error } = await sb.from('warehouse_items').insert(toInsert).select();
+      if (!error && data) {
+        data.forEach(row => {
+          const tempRow = WH.find(w => w.cons === row.cons && w.id > 1e12);
+          if (tempRow) tempRow.id = row.id;
+        });
+      }
+    }
+    const localIds = WH.filter(w => w.id < 1e12).map(w => w.id);
+    if (localIds.length) {
+      await sb.from('warehouse_items').delete().eq('org_id', currentOrgId).not('id', 'in', `(${localIds.join(',')})`);
+    }
+  } catch (e) {
+    console.error('saveWH() sync error:', e);
+    toast('⚠ Sync failed — changes saved locally only.');
+  }
+}
 
 // ═══════════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════════
-let DB = [];
-let sel = new Set();
-let sortK='date', sortD=-1;
-let overdueFilter=false;
-function toggleOverdueFilter(){
-  overdueFilter=!overdueFilter;
-  const btn=document.getElementById('overdueBtn');
-  if(btn){btn.style.background=overdueFilter?'#2a1010':'';btn.style.borderColor=overdueFilter?'#c04040':'#4a2020';}
-  renderTable();
-}
-let drawerID=null;
-let formOpen=false, activeTab='overview';
-
-const SO={pending:0,'in-transit':1,cleared:2,delivered:3};
-const SLBL={pending:'Pending','in-transit':'In Transit',cleared:'Cleared',delivered:'Delivered'};
-const SCOL={pending:'#383838','in-transit':'#585858',cleared:'#888',delivered:'#d8d8d8'};
-const ARCOL={pending:'#484848','in-transit':'#787878',cleared:'#aaaaaa',delivered:'#f0f0f0'};
-const PLBL={high:'High',normal:'Normal',low:'Low'};
-
-let geoCache = {};
-let geoQueue=[], geoRunning=false;
-
-// ── SAVE / SYNC ──────────────────────────────────
-// save() / saveWH() push the in-memory DB/WH arrays to Supabase.
-// Falls back to localStorage if Supabase isn't configured (e.g. local dev/testing).
-async function save(){
-  localStorage.setItem('stv5',JSON.stringify(DB)); // local fallback cache
-  if(!sb||!currentOrgId) return;
-  try{
-    const rows=DB.map(s=>({
-      id: s.id>1e12?undefined:s.id, // large ids = client-generated temp ids, let DB assign real ones
-      org_id: currentOrgId,
-      cons:s.cons, sender:s.sender, orig:s.orig, receiver:s.receiver, dest:s.dest,
-      stat:s.stat, pri:s.pri, notes:s.notes,
-      expected_date:s.expectedDate||null, cost:s.cost||null,
-      created_at:s.date, history:s.history||[]
-    }));
-    const toInsert=rows.filter(r=>r.id===undefined);
-    const toUpdate=rows.filter(r=>r.id!==undefined);
-    if(toUpdate.length) await sb.from('shipments').upsert(toUpdate);
-    if(toInsert.length){
-      const {data,error}=await sb.from('shipments').insert(toInsert).select();
-      if(!error&&data){
-        // Map newly-assigned real IDs back onto in-memory records
-        data.forEach((row,i)=>{
-          const tempRow=DB.find(s=>s.cons===row.cons&&s.id>1e12);
-          if(tempRow) tempRow.id=row.id;
-        });
-      }
-    }
-    // Remove rows from Supabase that no longer exist locally
-    const localIds=DB.filter(s=>s.id<1e12).map(s=>s.id);
-    if(localIds.length){
-      await sb.from('shipments').delete().eq('org_id',currentOrgId).not('id','in',`(${localIds.join(',')})`);
-    }
-  }catch(e){ console.error('save() sync error:',e); toast('⚠ Sync failed — changes saved locally only.'); }
-}
-// saveGeo(k) is defined in the GEOCODING section below — persists to localStorage + Supabase
-
-function seed(){
+function seed() {
   return [
-    {id:1, cons:'JNB-2024-001',sender:'Acme Exports',   orig:'Johannesburg',receiver:'TradeCo UK',   dest:'London',    stat:'delivered', pri:'normal',notes:'Fragile',           date:'2024-09-10T08:00:00Z',expectedDate:'2024-09-20',cost:2400,history:[{d:'2024-09-10T08:00:00Z',t:'Created'},{d:'2024-09-18T14:00:00Z',t:'Delivered'}]},
-    {id:2, cons:'DUR-2024-047',sender:'SA Minerals',    orig:'Durban',      receiver:'Gulf Partners',dest:'Dubai',     stat:'in-transit',pri:'high',  notes:'Customs pre-cleared',date:'2024-11-01T10:30:00Z',expectedDate:'2024-11-15',cost:3100,history:[{d:'2024-11-01T10:30:00Z',t:'Created'},{d:'2024-11-03T09:00:00Z',t:'Departed Durban'}]},
-    {id:3, cons:'CPT-2024-112',sender:'Cape Logistics', orig:'Cape Town',   receiver:'EAF Group',    dest:'Nairobi',   stat:'cleared',   pri:'normal',notes:'',                  date:'2024-11-18T14:15:00Z',expectedDate:'2024-11-28',cost:1850,history:[{d:'2024-11-18T14:15:00Z',t:'Created'},{d:'2024-11-22T11:00:00Z',t:'Customs cleared'}]},
-    {id:4, cons:'JNB-2024-089',sender:'Mines Direct',   orig:'Johannesburg',receiver:'Asia Pacific', dest:'Singapore', stat:'pending',   pri:'low',   notes:'Awaiting export docs',date:'2024-11-28T09:00:00Z',expectedDate:'2024-12-15',cost:2950,history:[{d:'2024-11-28T09:00:00Z',t:'Created'}]},
-    {id:5, cons:'JNB-2024-103',sender:'Acme Exports',   orig:'Johannesburg',receiver:'Americas Co',  dest:'New York',  stat:'in-transit',pri:'high',  notes:'Reefer container',  date:'2024-12-02T06:00:00Z',expectedDate:'2024-12-18',cost:3850,history:[{d:'2024-12-02T06:00:00Z',t:'Created'},{d:'2024-12-04T08:00:00Z',t:'Loaded at port'}]},
-    {id:6, cons:'DUR-2024-058',sender:'SA Minerals',    orig:'Durban',      receiver:'Bharat Trade', dest:'Mumbai',    stat:'pending',   pri:'normal',notes:'',                  date:'2024-12-05T08:45:00Z',expectedDate:'2024-12-22',cost:2200,history:[{d:'2024-12-05T08:45:00Z',t:'Created'}]},
-    {id:7, cons:'CPT-2025-001',sender:'Cape Logistics', orig:'Cape Town',   receiver:'Euro Freight', dest:'Rotterdam', stat:'in-transit',pri:'normal',notes:'Full container',    date:'2025-01-10T07:00:00Z',expectedDate:'2025-01-28',cost:2650,history:[{d:'2025-01-10T07:00:00Z',t:'Created'}]},
-    {id:8, cons:'JNB-2025-014',sender:'Gold Fields SA', orig:'Johannesburg',receiver:'Zurich Vault', dest:'Zurich',    stat:'delivered', pri:'high',  notes:'Insured',           date:'2025-01-22T09:30:00Z',expectedDate:'2025-01-28',cost:4200,history:[{d:'2025-01-22T09:30:00Z',t:'Created'},{d:'2025-01-30T16:00:00Z',t:'Delivered'}]},
+    { id: 1, cons: 'JNB-2024-001', sender: 'Acme Exports', orig: 'Johannesburg', receiver: 'TradeCo UK', dest: 'London', stat: 'delivered', pri: 'normal', notes: 'Fragile', date: '2024-09-10T08:00:00Z', expectedDate: '2024-09-20', cost: 2400, history: [{ d: '2024-09-10T08:00:00Z', t: 'Created' }, { d: '2024-09-18T14:00:00Z', t: 'Delivered' }] },
+    { id: 2, cons: 'DUR-2024-047', sender: 'SA Minerals', orig: 'Durban', receiver: 'Gulf Partners', dest: 'Dubai', stat: 'in-transit', pri: 'high', notes: 'Customs pre-cleared', date: '2024-11-01T10:30:00Z', expectedDate: '2024-11-15', cost: 3100, history: [{ d: '2024-11-01T10:30:00Z', t: 'Created' }, { d: '2024-11-03T09:00:00Z', t: 'Departed Durban' }] },
+    { id: 3, cons: 'CPT-2024-112', sender: 'Cape Logistics', orig: 'Cape Town', receiver: 'EAF Group', dest: 'Nairobi', stat: 'cleared', pri: 'normal', notes: '', date: '2024-11-18T14:15:00Z', expectedDate: '2024-11-28', cost: 1850, history: [{ d: '2024-11-18T14:15:00Z', t: 'Created' }, { d: '2024-11-22T11:00:00Z', t: 'Customs cleared' }] },
+    { id: 4, cons: 'JNB-2024-089', sender: 'Mines Direct', orig: 'Johannesburg', receiver: 'Asia Pacific', dest: 'Singapore', stat: 'pending', pri: 'low', notes: 'Awaiting export docs', date: '2024-11-28T09:00:00Z', expectedDate: '2024-12-15', cost: 2950, history: [{ d: '2024-11-28T09:00:00Z', t: 'Created' }] },
+    { id: 5, cons: 'JNB-2024-103', sender: 'Acme Exports', orig: 'Johannesburg', receiver: 'Americas Co', dest: 'New York', stat: 'in-transit', pri: 'high', notes: 'Reefer container', date: '2024-12-02T06:00:00Z', expectedDate: '2024-12-18', cost: 3850, history: [{ d: '2024-12-02T06:00:00Z', t: 'Created' }, { d: '2024-12-04T08:00:00Z', t: 'Loaded at port' }] },
+    { id: 6, cons: 'DUR-2024-058', sender: 'SA Minerals', orig: 'Durban', receiver: 'Bharat Trade', dest: 'Mumbai', stat: 'pending', pri: 'normal', notes: '', date: '2024-12-05T08:45:00Z', expectedDate: '2024-12-22', cost: 2200, history: [{ d: '2024-12-05T08:45:00Z', t: 'Created' }] },
+    { id: 7, cons: 'CPT-2025-001', sender: 'Cape Logistics', orig: 'Cape Town', receiver: 'Euro Freight', dest: 'Rotterdam', stat: 'in-transit', pri: 'normal', notes: 'Full container', date: '2025-01-10T07:00:00Z', expectedDate: '2025-01-28', cost: 2650, history: [{ d: '2025-01-10T07:00:00Z', t: 'Created' }] },
+    { id: 8, cons: 'JNB-2025-014', sender: 'Gold Fields SA', orig: 'Johannesburg', receiver: 'Zurich Vault', dest: 'Zurich', stat: 'delivered', pri: 'high', notes: 'Insured', date: '2025-01-22T09:30:00Z', expectedDate: '2025-01-28', cost: 4200, history: [{ d: '2025-01-22T09:30:00Z', t: 'Created' }, { d: '2025-01-30T16:00:00Z', t: 'Delivered' }] },
+  ];
+}
+
+function seedWH() {
+  return [
+    { id: 101, cons: 'JNB-2024-001', desc: 'Electronics — fragile', qty: '12 pallets', boxes: '48 boxes', loc: 'bay-a', stat: 'in-store', shipRef: '', notes: 'Handle with care', overnight: 'Awaiting collection by consignee', pickup: '2024-09-12', date: '2024-09-10T08:00:00Z', log: [{ d: '2024-09-10T08:00:00Z', t: 'Received into Bay A' }, { d: '2024-09-11T09:00:00Z', t: 'Moved to shelf A-14' }] },
+    { id: 102, cons: 'DUR-2024-047', desc: 'Raw minerals', qty: '3 containers', boxes: '', loc: 'bay-b', stat: 'inbound', shipRef: 'DUR-2024-047', notes: 'ETA tomorrow', overnight: '', pickup: '', date: '2024-11-01T10:30:00Z', log: [{ d: '2024-11-01T10:30:00Z', t: 'Logged as inbound' }] },
+    { id: 103, cons: 'CPT-2024-112', desc: 'Perishables', qty: '40 crates', boxes: '40 boxes', loc: 'cold-store', stat: 'in-store', shipRef: 'CPT-2024-112', notes: 'Temp: 4°C', overnight: 'Driver unavailable until morning — temp-controlled overnight hold', pickup: '2024-11-19', date: '2024-11-18T14:15:00Z', log: [{ d: '2024-11-18T14:15:00Z', t: 'Placed in cold store' }, { d: '2024-11-20T08:00:00Z', t: 'Temp check passed' }] },
+    { id: 104, cons: 'JNB-2024-089', desc: 'Machinery parts', qty: '6 crates', boxes: '6 boxes', loc: 'bay-c', stat: 'dispatched', shipRef: 'JNB-2024-089', notes: '', overnight: '', pickup: '', date: '2024-11-28T09:00:00Z', log: [{ d: '2024-11-28T09:00:00Z', t: 'Received' }, { d: '2024-11-30T11:00:00Z', t: 'Dispatched to freight' }] },
+    { id: 105, cons: 'JNB-2024-103', desc: 'Refrigerated goods', qty: '1 reefer', boxes: '12 boxes', loc: 'cold-store', stat: 'inbound', shipRef: 'JNB-2024-103', notes: 'Reefer container', overnight: 'Customs inspection pending — must stay overnight', pickup: '2024-12-03', date: '2024-12-02T06:00:00Z', log: [{ d: '2024-12-02T06:00:00Z', t: 'Logged as inbound' }] },
+    { id: 106, cons: 'DUR-2024-058', desc: 'Auto components', qty: '8 crates', boxes: '8 boxes', loc: 'bay-a', stat: 'in-store', shipRef: 'DUR-2024-058', notes: '', overnight: 'Receiving dock closed — no outbound until 08:00', pickup: '2024-12-06', date: '2024-12-05T16:30:00Z', log: [{ d: '2024-12-05T16:30:00Z', t: 'Received late afternoon' }, { d: '2024-12-05T17:00:00Z', t: 'Overnight hold logged — dock closure' }] },
   ];
 }
 
 // ═══════════════════════════════════════════════
 // THEME
 // ═══════════════════════════════════════════════
-let currentTheme = localStorage.getItem('theme')||'dark';
-function applyTheme(t){
-  currentTheme=t;
-  document.body.setAttribute('data-theme',t);
-  document.getElementById('themeBtn').textContent = t==='dark'?'Light':'Dark';
-  localStorage.setItem('theme',t);
-  if(activeTab==='overview') renderCharts();
-  if(activeTab==='routes'){if(mapAnimId){cancelAnimationFrame(mapAnimId);mapAnimId=null;} renderMap();}
+let currentTheme = localStorage.getItem('theme') || 'dark';
+function applyTheme(t) {
+  currentTheme = t;
+  document.body.setAttribute('data-theme', t);
+  document.getElementById('themeBtn').textContent = t === 'dark' ? 'Light' : 'Dark';
+  localStorage.setItem('theme', t);
+  if (activeTab === 'overview') renderCharts();
+  if (activeTab === 'routes') { if (mapAnimId) { cancelAnimationFrame(mapAnimId); mapAnimId = null; } renderMap(); }
 }
-function toggleTheme(){ applyTheme(currentTheme==='dark'?'light':'dark'); }
+function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
 applyTheme(currentTheme);
 
 // ═══════════════════════════════════════════════
-// GEOCODING — cached in Supabase (shared per org) +
-// localStorage fallback for offline/no-backend mode
+// GEOCODING
 // ═══════════════════════════════════════════════
-function geocity(name){
-  return new Promise(resolve=>{
-    const k=name.toLowerCase().trim();
-    if(k in geoCache){ resolve(geoCache[k]); return; }
-    geoQueue.push({k,name,resolve});
-    if(!geoRunning) processGeoQueue();
+function geocity(name) {
+  return new Promise(resolve => {
+    const k = name.toLowerCase().trim();
+    if (k in geoCache) { resolve(geoCache[k]); return; }
+    geoQueue.push({ k, name, resolve });
+    if (!geoRunning) processGeoQueue();
   });
 }
-async function processGeoQueue(){
-  geoRunning=true;
-  while(geoQueue.length){
-    const {k,name,resolve}=geoQueue.shift();
-    if(k in geoCache){ resolve(geoCache[k]); continue; }
-
-    // Check Supabase shared cache first (avoids re-geocoding cities other users already resolved)
-    if(sb&&currentOrgId){
-      try{
-        const {data}=await sb.from('geocode_cache').select('lat,lng').eq('org_id',currentOrgId).eq('city_key',k).maybeSingle();
-        if(data){
-          geoCache[k]=(data.lat!=null&&data.lng!=null)?[data.lat,data.lng]:null;
+async function processGeoQueue() {
+  geoRunning = true;
+  while (geoQueue.length) {
+    const { k, name, resolve } = geoQueue.shift();
+    if (k in geoCache) { resolve(geoCache[k]); continue; }
+    // Check Supabase shared cache first (avoids re-geocoding cities)
+    if (sb) {
+      try {
+        const { data } = await sb.from('geocode_cache').select('lat,lng').eq('org_id', currentOrgId).eq('city_key', k).maybeSingle();
+        if (data) {
+          geoCache[k] = (data.lat != null && data.lng != null) ? [data.lat, data.lng] : null;
           resolve(geoCache[k]); continue;
         }
-      }catch(e){ /* fall through to Nominatim */ }
+      } catch (e) { /* fall through to Nominatim */ }
     }
-
-    try{
-      const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=1`,{headers:{'Accept-Language':'en','User-Agent':'ShipmentTracker/2.0'}});
-      const d=await r.json();
-      geoCache[k]=d.length?[parseFloat(d[0].lat),parseFloat(d[0].lon)]:null;
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=1`, { headers: { 'Accept-Language': 'en', 'User-Agent': 'ShipmentTracker/2.0' } });
+      const d = await r.json();
+      geoCache[k] = d.length ? [parseFloat(d[0].lat), parseFloat(d[0].lon)] : null;
       saveGeo(k);
       resolve(geoCache[k]);
-    }catch{ geoCache[k]=null; saveGeo(k); resolve(null); }
-    await new Promise(r=>setTimeout(r,320));
+    } catch { geoCache[k] = null; saveGeo(k); resolve(null); }
+    await new Promise(r => setTimeout(r, 320));
   }
-  geoRunning=false;
+  geoRunning = false;
 }
-// Persist a single resolved city to localStorage + Supabase shared cache
-function saveGeo(k){
-  const all=JSON.parse(localStorage.getItem('geoCache5')||'{}');
-  all[k]=geoCache[k];
-  localStorage.setItem('geoCache5',JSON.stringify(all));
-  if(sb&&currentOrgId&&k){
-    const coord=geoCache[k];
+function saveGeo(k) {
+  const all = JSON.parse(localStorage.getItem('geoCache5') || '{}');
+  all[k] = geoCache[k];
+  localStorage.setItem('geoCache5', JSON.stringify(all));
+  if (sb) {
+    const coord = geoCache[k];
     sb.from('geocode_cache').upsert({
-      org_id:currentOrgId, city_key:k,
-      lat:coord?coord[0]:null, lng:coord?coord[1]:null
-    }).then(()=>{}).catch(()=>{});
+      org_id: currentOrgId, city_key: k,
+      lat: coord ? coord[0] : null, lng: coord ? coord[1] : null
+    }).then(() => { }).catch(() => { });
   }
 }
 
 // ═══════════════════════════════════════════════
 // TABS
 // ═══════════════════════════════════════════════
-function gotoTab(id,btn){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+function gotoTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   btn.classList.add('on');
-  document.getElementById('panel-'+id).classList.add('on');
-  activeTab=id;
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    if(id==='overview'){updateStats();renderCharts();}
-    if(id==='shipments') renderTable();
-    if(id==='warehouse') renderWarehouse();
-    if(id==='routes') renderMap();
-    else if(mapAnimId){cancelAnimationFrame(mapAnimId);mapAnimId=null;}
+  document.getElementById('panel-' + id).classList.add('on');
+  activeTab = id;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (id === 'overview') { updateStats(); renderCharts(); }
+    if (id === 'shipments') renderTable();
+    if (id === 'warehouse') renderWarehouse();
+    if (id === 'routes') renderMap();
+    else if (mapAnimId) { cancelAnimationFrame(mapAnimId); mapAnimId = null; }
   }));
 }
-function jumpFilter(s){
-  document.getElementById('filterSel').value=s;
-  gotoTab('shipments',document.querySelectorAll('.tab-btn')[1]);
+function jumpFilter(s) {
+  document.getElementById('filterSel').value = s;
+  gotoTab('shipments', document.querySelectorAll('.tab-btn')[1]);
 }
 
 // ═══════════════════════════════════════════════
 // KPI + OVERDUE LOGIC
 // ═══════════════════════════════════════════════
-function isOverdue(s){
-  if(s.stat==='delivered' || !s.expectedDate) return false;
+function isOverdue(s) {
+  if (s.stat === 'delivered' || !s.expectedDate) return false;
   return new Date(s.expectedDate) < new Date();
 }
-function isAtRisk(s){
-  if(s.stat==='delivered' || !s.expectedDate) return false;
-  const daysLeft=(new Date(s.expectedDate) - new Date())/(1000*60*60*24);
-  return daysLeft>0 && daysLeft<=1;
+function isAtRisk(s) {
+  if (s.stat === 'delivered' || !s.expectedDate) return false;
+  const daysLeft = (new Date(s.expectedDate) - new Date()) / (1000 * 60 * 60 * 24);
+  return daysLeft > 0 && daysLeft <= 1;
 }
-function daysUntilDue(s){
-  if(!s.expectedDate) return null;
-  const days=Math.ceil((new Date(s.expectedDate) - new Date())/(1000*60*60*24));
+function daysUntilDue(s) {
+  if (!s.expectedDate) return null;
+  const days = Math.ceil((new Date(s.expectedDate) - new Date()) / (1000 * 60 * 60 * 24));
   return days;
 }
-
-function calcKPIs(){
-  const delivered=DB.filter(s=>s.stat==='delivered');
-  const withDate=DB.filter(s=>s.expectedDate);
-  const onTime=delivered.filter(s=>s.expectedDate && new Date(s.date)<new Date(s.expectedDate)).length;
-  const overdue=DB.filter(isOverdue).length;
-  const avgCost=DB.filter(s=>s.cost).length>0? (DB.filter(s=>s.cost).reduce((a,b)=>a+(b.cost||0),0)/DB.filter(s=>s.cost).length).toFixed(0):0;
-  
-  let avgWHDays=0;
-  if(WH.filter(w=>w.stat!=='dispatched').length>0){
-    const whDays=WH.filter(w=>w.stat!=='dispatched').map(w=>{
-      const d=Math.ceil((new Date() - new Date(w.date))/(1000*60*60*24));
+function calcKPIs() {
+  const delivered = DB.filter(s => s.stat === 'delivered');
+  const withDate = DB.filter(s => s.expectedDate);
+  const onTime = delivered.filter(s => s.expectedDate && new Date(s.date) < new Date(s.expectedDate)).length;
+  const overdue = DB.filter(isOverdue).length;
+  const avgCost = DB.filter(s => s.cost).length > 0 ? (DB.filter(s => s.cost).reduce((a, b) => a + (b.cost || 0), 0) / DB.filter(s => s.cost).length).toFixed(0) : 0;
+  let avgWHDays = 0;
+  if (WH.filter(w => w.stat !== 'dispatched').length > 0) {
+    const whDays = WH.filter(w => w.stat !== 'dispatched').map(w => {
+      const d = Math.ceil((new Date() - new Date(w.date)) / (1000 * 60 * 60 * 24));
       return d;
     });
-    avgWHDays=(whDays.reduce((a,b)=>a+b,0)/whDays.length).toFixed(1);
+    avgWHDays = (whDays.reduce((a, b) => a + b, 0) / whDays.length).toFixed(1);
   }
-  
   return {
-    onTimePercent: withDate.length>0? Math.round((onTime/withDate.length)*100):0,
+    onTimePercent: withDate.length > 0 ? Math.round((onTime / withDate.length) * 100) : 0,
     avgWHDays: parseFloat(avgWHDays),
     overdueCount: overdue,
     avgCost: parseInt(avgCost)
   };
 }
-
-function updateAlert(){
-  const kpis=calcKPIs();
-  const overdueShips=DB.filter(isOverdue);
-  const overdueWH=WH.filter(w=>w.stat!=='dispatched' && (new Date() - new Date(w.date))/(1000*60*60*24)>3);
-  
-  let msg='';
-  if(overdueShips.length>0) msg+=`${overdueShips.length} shipment${overdueShips.length>1?'s':''} overdue · `;
-  if(overdueWH.length>0) msg+=`${overdueWH.length} warehouse item${overdueWH.length>1?'s':''} stored >3 days`;
-  msg=msg.replace(/ · $/,'');
-  
-  if(msg){
-    document.getElementById('alertText').textContent='⚠ '+msg;
+function updateAlert() {
+  const kpis = calcKPIs();
+  const overdueShips = DB.filter(isOverdue);
+  const overdueWH = WH.filter(w => w.stat !== 'dispatched' && (new Date() - new Date(w.date)) / (1000 * 60 * 60 * 24) > 3);
+  let msg = '';
+  if (overdueShips.length > 0) msg += `${overdueShips.length} shipment${overdueShips.length > 1 ? 's' : ''} overdue · `;
+  if (overdueWH.length > 0) msg += `${overdueWH.length} warehouse item${overdueWH.length > 1 ? 's' : ''} stored >3 days`;
+  msg = msg.replace(/ · $/, '');
+  if (msg) {
+    document.getElementById('alertText').textContent = '⚠ ' + msg;
     document.getElementById('alertBanner').classList.add('on');
-  }else{
+  } else {
     closeAlert();
   }
 }
-
-function closeAlert(){
-  document.getElementById('alertBanner').classList.remove('on');
-}
+function closeAlert() { document.getElementById('alertBanner').classList.remove('on'); }
 
 // ═══════════════════════════════════════════════
 // STATS
-function updateStats(){
-  const now=new Date();
-  const thisMonth=DB.filter(s=>{ const d=new Date(s.date); return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth(); }).length;
-  const lastMonth=DB.filter(s=>{ const d=new Date(s.date); const lm=new Date(now.getFullYear(),now.getMonth()-1,1); return d.getFullYear()===lm.getFullYear()&&d.getMonth()===lm.getMonth(); }).length;
+function updateStats() {
+  const now = new Date();
+  const thisMonth = DB.filter(s => { const d = new Date(s.date); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth(); }).length;
+  const lastMonth = DB.filter(s => { const d = new Date(s.date); const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1); return d.getFullYear() === lm.getFullYear() && d.getMonth() === lm.getMonth(); }).length;
 
-  // KPIs
-  const kpis=calcKPIs();
-  document.getElementById('sn-all').textContent=DB.length;
-  document.getElementById('sn-ontime').textContent=kpis.onTimePercent+'%';
-  document.getElementById('sn-avgwh').textContent=kpis.avgWHDays;
-  document.getElementById('sn-overdue').textContent=kpis.overdueCount;
+  const kpis = calcKPIs();
+  document.getElementById('sn-all').textContent = DB.length;
+  document.getElementById('sn-ontime').textContent = kpis.onTimePercent + '%';
+  document.getElementById('sn-avgwh').textContent = kpis.avgWHDays;
+  document.getElementById('sn-overdue').textContent = kpis.overdueCount;
 
-  // Trend for on-time
-  const delivered=DB.filter(s=>s.stat==='delivered');
-  const withDate=DB.filter(s=>s.expectedDate);
-  if(withDate.length>0){
-    const trend=kpis.onTimePercent>=85?'up':kpis.onTimePercent<70?'dn':'flat';
-    document.getElementById('tr-ontime').className='sc-trend '+trend;
-    document.getElementById('tr-ontime').textContent=trend==='up'?'✓':trend==='dn'?'⚠':'→';
+  const delivered = DB.filter(s => s.stat === 'delivered');
+  const withDate = DB.filter(s => s.expectedDate);
+  if (withDate.length > 0) {
+    const trend = kpis.onTimePercent >= 85 ? 'up' : kpis.onTimePercent < 70 ? 'dn' : 'flat';
+    document.getElementById('tr-ontime').className = 'sc-trend ' + trend;
+    document.getElementById('tr-ontime').textContent = trend === 'up' ? '✓' : trend === 'dn' ? '⚠' : '→';
   }
 
-  // Warehouse sparkline
-  const months=[];
-  for(let i=5;i>=0;i--){
-    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-    months.push({y:d.getFullYear(),m:d.getMonth()});
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ y: d.getFullYear(), m: d.getMonth() });
   }
-  const whDays=months.map(({y,m})=>{
-    const itemsMonth=WH.filter(w=>{
-      const wd=new Date(w.date); return wd.getFullYear()===y&&wd.getMonth()===m&&w.stat!=='dispatched';
+  const whDays = months.map(({ y, m }) => {
+    const itemsMonth = WH.filter(w => {
+      const wd = new Date(w.date); return wd.getFullYear() === y && wd.getMonth() === m && w.stat !== 'dispatched';
     });
-    return itemsMonth.length>0? (itemsMonth.reduce((a,b)=>a+Math.ceil((new Date(y,m+1,0)-new Date(b.date))/(1000*60*60*24)),0)/itemsMonth.length).toFixed(1):0;
+    return itemsMonth.length > 0 ? (itemsMonth.reduce((a, b) => a + Math.ceil((new Date(y, m + 1, 0) - new Date(b.date)) / (1000 * 60 * 60 * 24)), 0) / itemsMonth.length).toFixed(1) : 0;
   });
-  renderSparkline('sp-all',Array(6).fill(0).map((_,i)=>DB.filter(s=>{const d=new Date(s.date);return d.getMonth()===months[i].m&&d.getFullYear()===months[i].y;}).length));
-  renderSparkline('sp-ontime',Array(6).fill(kpis.onTimePercent));
-  renderSparkline('sp-avgwh',whDays.map(parseFloat));
-  renderSparkline('sp-overdue',Array(6).fill(kpis.overdueCount));
+  renderSparkline('sp-all', Array(6).fill(0).map((_, i) => DB.filter(s => { const d = new Date(s.date); return d.getMonth() === months[i].m && d.getFullYear() === months[i].y; }).length));
+  renderSparkline('sp-ontime', Array(6).fill(kpis.onTimePercent));
+  renderSparkline('sp-avgwh', whDays.map(parseFloat));
+  renderSparkline('sp-overdue', Array(6).fill(kpis.overdueCount));
 
-  const n=DB.length;
-  document.getElementById('hMeta').textContent=n===1?'1 shipment':`${n} shipments`;
+  document.getElementById('hMeta').textContent = DB.length === 1 ? '1 shipment' : `${DB.length} shipments`;
   updateAlert();
 }
 
-function renderSparkline(id, data){
-  const svg=document.getElementById(id);
-  if(!svg) return;
-  const W=svg.clientWidth||200, H=24;
-  const max=Math.max(...data,1);
-  const step=W/(data.length-1||1);
-  const pts=data.map((v,i)=>`${i*step},${H-1-(v/max)*(H-4)}`).join(' ');
-  const isDark=currentTheme==='dark';
-  const col=isDark?'#383838':'#bbbbbb';
-  svg.innerHTML=`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.2" stroke-linejoin="round"/>`;
+function renderSparkline(id, data) {
+  const svg = document.getElementById(id);
+  if (!svg) return;
+  const W = svg.clientWidth || 200, H = 24;
+  const max = Math.max(...data, 1);
+  const step = W / (data.length - 1 || 1);
+  const pts = data.map((v, i) => `${i * step},${H - 1 - (v / max) * (H - 4)}`).join(' ');
+  const isDark = currentTheme === 'dark';
+  const col = isDark ? '#383838' : '#bbbbbb';
+  svg.innerHTML = `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.2" stroke-linejoin="round"/>`;
 }
 
 // ═══════════════════════════════════════════════
 // CHARTS
 // ═══════════════════════════════════════════════
-function renderCharts(){ renderDonut(); renderBar(); }
+function renderCharts() { renderDonut(); renderBar(); }
 
-function renderDonut(){
-  const svg=document.getElementById('donutSvg');
-  const leg=document.getElementById('donutLegend');
-  const total=DB.length;
-  const cnts={pending:0,'in-transit':0,cleared:0,delivered:0};
-  DB.forEach(s=>cnts[s.stat]=(cnts[s.stat]||0)+1);
-  if(!total){
-    svg.innerHTML=`<circle cx="80" cy="80" r="68" fill="none" stroke="var(--b1)" stroke-width="24"/>
+function renderDonut() {
+  const svg = document.getElementById('donutSvg');
+  const leg = document.getElementById('donutLegend');
+  const total = DB.length;
+  const cnts = { pending: 0, 'in-transit': 0, cleared: 0, delivered: 0 };
+  DB.forEach(s => cnts[s.stat] = (cnts[s.stat] || 0) + 1);
+  if (!total) {
+    svg.innerHTML = `<circle cx="80" cy="80" r="68" fill="none" stroke="var(--b1)" stroke-width="24"/>
       <text x="80" y="85" text-anchor="middle" fill="var(--t3)" font-family="DM Mono,monospace" font-size="11">empty</text>`;
-    leg.innerHTML=''; return;
+    leg.innerHTML = ''; return;
   }
-  let a=-Math.PI/2,paths='';
-  const R=68,r=46,cx=80,cy=80;
-  Object.entries(cnts).filter(([,v])=>v>0).forEach(([k,v])=>{
-    const sw=v/total*Math.PI*2,ea=a+sw;
-    const x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(ea),y2=cy+R*Math.sin(ea);
-    const ix1=cx+r*Math.cos(a),iy1=cy+r*Math.sin(a),ix2=cx+r*Math.cos(ea),iy2=cy+r*Math.sin(ea);
-    const lg=sw>Math.PI?1:0;
-    paths+=`<path d="M${x1},${y1}A${R},${R} 0 ${lg},1 ${x2},${y2}L${ix2},${iy2}A${r},${r} 0 ${lg},0 ${ix1},${iy1}Z" fill="${SCOL[k]}"/>`;
-    a=ea;
+  let a = -Math.PI / 2, paths = '';
+  const R = 68, r = 46, cx = 80, cy = 80;
+  Object.entries(cnts).filter(([, v]) => v > 0).forEach(([k, v]) => {
+    const sw = v / total * Math.PI * 2, ea = a + sw;
+    const x1 = cx + R * Math.cos(a), y1 = cy + R * Math.sin(a), x2 = cx + R * Math.cos(ea), y2 = cy + R * Math.sin(ea);
+    const ix1 = cx + r * Math.cos(a), iy1 = cy + r * Math.sin(a), ix2 = cx + r * Math.cos(ea), iy2 = cy + r * Math.sin(ea);
+    const lg = sw > Math.PI ? 1 : 0;
+    paths += `<path d="M${x1},${y1}A${R},${R} 0 ${lg},1 ${x2},${y2}L${ix2},${iy2}A${r},${r} 0 ${lg},0 ${ix1},${iy1}Z" fill="${SCOL[k]}"/>`;
+    a = ea;
   });
-  const textCol=currentTheme==='dark'?'#f0f0f0':'#111';
-  const subCol=currentTheme==='dark'?'#3a3a3a':'#bbb';
-  svg.innerHTML=paths+
+  const textCol = currentTheme === 'dark' ? '#f0f0f0' : '#111';
+  const subCol = currentTheme === 'dark' ? '#3a3a3a' : '#bbb';
+  svg.innerHTML = paths +
     `<text x="80" y="74" text-anchor="middle" fill="${textCol}" font-family="DM Mono,monospace" font-size="26" font-weight="300">${total}</text>
      <text x="80" y="92" text-anchor="middle" fill="${subCol}" font-family="DM Mono,monospace" font-size="9" letter-spacing="1.5">TOTAL</text>`;
-  leg.innerHTML=Object.entries(cnts).map(([k,v])=>`
+  leg.innerHTML = Object.entries(cnts).map(([k, v]) => `
     <div class="dl-row">
       <div class="dl-left"><div class="dl-dot" style="background:${SCOL[k]}"></div><span class="dl-name">${SLBL[k]}</span></div>
       <span class="dl-val">${v}</span>
     </div>`).join('');
 }
 
-function renderBar(){
-  const svg=document.getElementById('barSvg');
-  const W=svg.clientWidth||640,H=200;
-  const pad={t:16,r:16,b:38,l:32},cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
-  const now=new Date(),months=[];
-  for(let i=5;i>=0;i--){
-    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-    months.push({lbl:d.toLocaleString('default',{month:'short'}),y:d.getFullYear(),m:d.getMonth(),n:0});
+function renderBar() {
+  const svg = document.getElementById('barSvg');
+  const W = svg.clientWidth || 640, H = 200;
+  const pad = { t: 16, r: 16, b: 38, l: 32 }, cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
+  const now = new Date(), months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ lbl: d.toLocaleString('default', { month: 'short' }), y: d.getFullYear(), m: d.getMonth(), n: 0 });
   }
-  DB.forEach(s=>{const d=new Date(s.date);const mo=months.find(x=>x.y===d.getFullYear()&&x.m===d.getMonth());if(mo)mo.n++;});
-  const max=Math.max(...months.map(m=>m.n),1);
-  const slot=cW/months.length,bw=slot*.42;
-  const gc=currentTheme==='dark'?'#181818':'#e0e0e0';
-  const ac=currentTheme==='dark'?'#222':'#ccc';
-  const bc=currentTheme==='dark'?'#f0f0f0':'#333';
-  const lc=currentTheme==='dark'?'#666':'#999';
-  const tc=currentTheme==='dark'?'#3a3a3a':'#aaa';
-  let out='';
-  [0,1,2,3,4].forEach(i=>{
-    const y=pad.t+cH*(1-i/4),v=Math.round(i/4*max);
-    out+=`<line x1="${pad.l}" y1="${y}" x2="${pad.l+cW}" y2="${y}" stroke="${gc}" stroke-width="1"/>`;
-    if(i>0)out+=`<text x="${pad.l-5}" y="${y+4}" text-anchor="end" fill="${tc}" font-family="DM Mono,monospace" font-size="10">${v}</text>`;
+  DB.forEach(s => { const d = new Date(s.date); const mo = months.find(x => x.y === d.getFullYear() && x.m === d.getMonth()); if (mo) mo.n++; });
+  const max = Math.max(...months.map(m => m.n), 1);
+  const slot = cW / months.length, bw = slot * .42;
+  const gc = currentTheme === 'dark' ? '#181818' : '#e0e0e0';
+  const ac = currentTheme === 'dark' ? '#222' : '#ccc';
+  const bc = currentTheme === 'dark' ? '#f0f0f0' : '#333';
+  const lc = currentTheme === 'dark' ? '#666' : '#999';
+  const tc = currentTheme === 'dark' ? '#3a3a3a' : '#aaa';
+  let out = '';
+  [0, 1, 2, 3, 4].forEach(i => {
+    const y = pad.t + cH * (1 - i / 4), v = Math.round(i / 4 * max);
+    out += `<line x1="${pad.l}" y1="${y}" x2="${pad.l + cW}" y2="${y}" stroke="${gc}" stroke-width="1"/>`;
+    if (i > 0) out += `<text x="${pad.l - 5}" y="${y + 4}" text-anchor="end" fill="${tc}" font-family="DM Mono,monospace" font-size="10">${v}</text>`;
   });
-  out+=`<line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${pad.t+cH}" stroke="${ac}" stroke-width="1"/>
-    <line x1="${pad.l}" y1="${pad.t+cH}" x2="${pad.l+cW}" y2="${pad.t+cH}" stroke="${ac}" stroke-width="1"/>`;
-  months.forEach((mo,i)=>{
-    const cx2=pad.l+slot*i+slot/2,bh=mo.n/max*cH,by=pad.t+cH-bh;
-    const fill=mo.n===0?(currentTheme==='dark'?'#151515':'#e8e8e8'):bc;
-    out+=`<rect x="${cx2-bw/2}" y="${by}" width="${bw}" height="${bh}" fill="${fill}"/>`;
-    if(mo.n>0)out+=`<text x="${cx2}" y="${by-5}" text-anchor="middle" fill="${lc}" font-family="DM Mono,monospace" font-size="10">${mo.n}</text>`;
-    out+=`<text x="${cx2}" y="${pad.t+cH+15}" text-anchor="middle" fill="${tc}" font-family="DM Mono,monospace" font-size="11">${mo.lbl}</text>`;
+  out += `<line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${pad.t + cH}" stroke="${ac}" stroke-width="1"/>
+    <line x1="${pad.l}" y1="${pad.t + cH}" x2="${pad.l + cW}" y2="${pad.t + cH}" stroke="${ac}" stroke-width="1"/>`;
+  months.forEach((mo, i) => {
+    const cx2 = pad.l + slot * i + slot / 2, bh = mo.n / max * cH, by = pad.t + cH - bh;
+    const fill = mo.n === 0 ? (currentTheme === 'dark' ? '#151515' : '#e8e8e8') : bc;
+    out += `<rect x="${cx2 - bw / 2}" y="${by}" width="${bw}" height="${bh}" fill="${fill}"/>`;
+    if (mo.n > 0) out += `<text x="${cx2}" y="${by - 5}" text-anchor="middle" fill="${lc}" font-family="DM Mono,monospace" font-size="10">${mo.n}</text>`;
+    out += `<text x="${cx2}" y="${pad.t + cH + 15}" text-anchor="middle" fill="${tc}" font-family="DM Mono,monospace" font-size="11">${mo.lbl}</text>`;
   });
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
-  svg.innerHTML=out;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = out;
 }
 
 // ═══════════════════════════════════════════════
 // D3 WORLD MAP
 // ═══════════════════════════════════════════════
-let mapAnimId=null, worldData=null;
+let mapAnimId = null, worldData = null;
 
-async function renderMap(){
-  // Cancel existing animation loop — single ID, not an array
-  if(mapAnimId){cancelAnimationFrame(mapAnimId);mapAnimId=null;}
-
-  const svgEl=document.getElementById('mapSvg');
-  svgEl.innerHTML='';
-  const W=svgEl.getBoundingClientRect().width||900;
-  const H=520;
-
-  document.getElementById('geoStatus').textContent='Loading world map…';
-
-  // Load TopoJSON once, cache permanently
-  if(!worldData){
-    try{
-      const resp=await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
-      worldData=await resp.json();
-    }catch(e){
-      document.getElementById('geoStatus').textContent='Map load failed — check connection.';
+async function renderMap() {
+  if (mapAnimId) { cancelAnimationFrame(mapAnimId); mapAnimId = null; }
+  const svgEl = document.getElementById('mapSvg');
+  svgEl.innerHTML = '';
+  const W = svgEl.getBoundingClientRect().width || 900;
+  const H = 520;
+  document.getElementById('geoStatus').textContent = 'Loading world map…';
+  if (!worldData) {
+    try {
+      const resp = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+      worldData = await resp.json();
+    } catch (e) {
+      document.getElementById('geoStatus').textContent = 'Map load failed — check connection.';
       return;
     }
   }
+  document.getElementById('geoStatus').textContent = 'Geocoding cities…';
+  const cities = new Set();
+  DB.forEach(s => { if (s.orig) cities.add(s.orig); if (s.dest) cities.add(s.dest); });
+  await Promise.all([...cities].map(c => geocity(c)));
+  const resolved = [...cities].filter(c => geoCache[c.toLowerCase().trim()]).length;
+  document.getElementById('geoStatus').textContent = `${resolved}/${cities.size} cities resolved · OpenStreetMap + D3`;
 
-  // Geocode cities
-  document.getElementById('geoStatus').textContent='Geocoding cities…';
-  const cities=new Set();
-  DB.forEach(s=>{if(s.orig)cities.add(s.orig);if(s.dest)cities.add(s.dest);});
-  await Promise.all([...cities].map(c=>geocity(c)));
-  const resolved=[...cities].filter(c=>geoCache[c.toLowerCase().trim()]).length;
-  document.getElementById('geoStatus').textContent=`${resolved}/${cities.size} cities resolved · OpenStreetMap + D3`;
-
-  // Projection — zoomed out so Botswana, Eswatini, Mozambique, Namibia, Lesotho, Zimbabwe all visible
-  // Centre ~27°E, -26°S  |  scale reduced from 1900 → 1450 for more breathing room
-  const saScale=(W/960)*1450;
-  const projection=d3.geoMercator()
+  const saScale = (W / 960) * 1450;
+  const projection = d3.geoMercator()
     .scale(saScale)
-    .center([27,-26])
-    .translate([W/2,H/2]);
-
-  projection.clipExtent([[0,0],[W,H]]);
-
-  const pathGen=d3.geoPath().projection(projection);
-
-  const svg=d3.select('#mapSvg')
-    .attr('viewBox',`0 0 ${W} ${H}`)
-    .attr('width',W).attr('height',H);
-
-  // Ocean background
-  svg.append('rect').attr('width',W).attr('height',H).attr('fill','var(--map-bg)');
-
-  // Sphere
-  svg.append('path').datum({type:'Sphere'}).attr('class','sphere').attr('d',pathGen);
-
-  // Graticule — 5° steps for better detail at this zoom
-  const graticule=d3.geoGraticule().step([5,5]);
-  svg.append('path').datum(graticule()).attr('class','graticule').attr('d',pathGen);
-
-  // Countries fill
-  const countries=topojson.feature(worldData,worldData.objects.countries);
-  svg.append('g').attr('class','countries')
+    .center([27, -26])
+    .translate([W / 2, H / 2]);
+  projection.clipExtent([[0, 0], [W, H]]);
+  const pathGen = d3.geoPath().projection(projection);
+  const svg = d3.select('#mapSvg')
+    .attr('viewBox', `0 0 ${W} ${H}`)
+    .attr('width', W).attr('height', H);
+  svg.append('rect').attr('width', W).attr('height', H).attr('fill', 'var(--map-bg)');
+  svg.append('path').datum({ type: 'Sphere' }).attr('class', 'sphere').attr('d', pathGen);
+  const graticule = d3.geoGraticule().step([5, 5]);
+  svg.append('path').datum(graticule()).attr('class', 'graticule').attr('d', pathGen);
+  const countries = topojson.feature(worldData, worldData.objects.countries);
+  svg.append('g').attr('class', 'countries')
     .selectAll('path')
     .data(countries.features)
     .enter().append('path')
-    .attr('d',pathGen);
-
-  // Country borders
+    .attr('d', pathGen);
   svg.append('path')
-    .datum(topojson.mesh(worldData,worldData.objects.countries,(a,b)=>a!==b))
-    .attr('fill','none')
-    .attr('stroke','var(--map-border)')
-    .attr('stroke-width',.4)
-    .attr('d',pathGen);
+    .datum(topojson.mesh(worldData, worldData.objects.countries, (a, b) => a !== b))
+    .attr('fill', 'none')
+    .attr('stroke', 'var(--map-border)')
+    .attr('stroke-width', .4)
+    .attr('d', pathGen);
 
-  // Build arc data — skip arcs where both ends project off-screen
-  const arcData=DB.map((s,i)=>{
-    const ok=geoCache[(s.orig||'').toLowerCase().trim()];
-    const dk=geoCache[(s.dest||'').toLowerCase().trim()];
-    if(!ok||!dk) return null;
-    const op=projection([ok[1],ok[0]]);
-    const dp=projection([dk[1],dk[0]]);
-    if(!op||!dp) return null;
-    return {s,op,dp,color:ARCOL[s.stat],offset:i*35};
+  const arcData = DB.map((s, i) => {
+    const ok = geoCache[(s.orig || '').toLowerCase().trim()];
+    const dk = geoCache[(s.dest || '').toLowerCase().trim()];
+    if (!ok || !dk) return null;
+    const op = projection([ok[1], ok[0]]);
+    const dp = projection([dk[1], dk[0]]);
+    if (!op || !dp) return null;
+    return { s, op, dp, color: ARCOL[s.stat], offset: i * 35 };
   }).filter(Boolean);
 
-  // City map — unique cities with resolved coords
-  const cityMap=new Map();
-  DB.forEach(s=>{
-    const ok=geoCache[(s.orig||'').toLowerCase().trim()];
-    const dk=geoCache[(s.dest||'').toLowerCase().trim()];
-    if(ok) cityMap.set(s.orig,ok);
-    if(dk) cityMap.set(s.dest,dk);
+  const cityMap = new Map();
+  DB.forEach(s => {
+    const ok = geoCache[(s.orig || '').toLowerCase().trim()];
+    const dk = geoCache[(s.dest || '').toLowerCase().trim()];
+    if (ok) cityMap.set(s.orig, ok);
+    if (dk) cityMap.set(s.dest, dk);
   });
 
-  // Arc group inserted before cities so dots render on top
-  const arcG=svg.append('g').attr('class','arc-group');
-
-  // Ghost arcs — static, drawn once
-  arcData.forEach(a=>{
+  const arcG = svg.append('g').attr('class', 'arc-group');
+  arcData.forEach(a => {
     arcG.append('path')
-      .attr('class','arc-path')
-      .attr('d',arcPath(a.op,a.dp))
-      .attr('stroke',a.color)
-      .attr('stroke-width',1)
-      .attr('opacity',.12);
+      .attr('class', 'arc-path')
+      .attr('d', arcPath(a.op, a.dp))
+      .attr('stroke', a.color)
+      .attr('stroke-width', 1)
+      .attr('opacity', .12);
   });
-
-  // Glow filter — defined once in defs
-  const defs=svg.append('defs');
-  const filt=defs.append('filter').attr('id','glow').attr('x','-60%').attr('y','-60%').attr('width','220%').attr('height','220%');
-  filt.append('feGaussianBlur').attr('stdDeviation','2.5').attr('result','blur');
-  const merge=filt.append('feMerge');
-  merge.append('feMergeNode').attr('in','blur');
-  merge.append('feMergeNode').attr('in','SourceGraphic');
-
-  // Bright animated arc paths — one per arc, updated each frame
-  const brightPaths=arcData.map(a=>
+  const defs = svg.append('defs');
+  const filt = defs.append('filter').attr('id', 'glow').attr('x', '-60%').attr('y', '-60%').attr('width', '220%').attr('height', '220%');
+  filt.append('feGaussianBlur').attr('stdDeviation', '2.5').attr('result', 'blur');
+  const merge = filt.append('feMerge');
+  merge.append('feMergeNode').attr('in', 'blur');
+  merge.append('feMergeNode').attr('in', 'SourceGraphic');
+  const brightPaths = arcData.map(a =>
     arcG.append('path')
-      .attr('class','arc-path')
-      .attr('stroke',a.color)
-      .attr('stroke-width',1.4)
-      .attr('opacity',0)
-      .attr('filter','url(#glow)')
+      .attr('class', 'arc-path')
+      .attr('stroke', a.color)
+      .attr('stroke-width', 1.4)
+      .attr('opacity', 0)
+      .attr('filter', 'url(#glow)')
   );
-
-  // Travelling dots — one per arc
-  const dots=arcData.map(a=>
+  const dots = arcData.map(a =>
     svg.append('circle')
-      .attr('class','arc-dot')
-      .attr('r',3)
-      .attr('fill',a.color)
-      .attr('opacity',0)
+      .attr('class', 'arc-dot')
+      .attr('r', 3)
+      .attr('fill', a.color)
+      .attr('opacity', 0)
   );
-
-  // City dots + labels — rendered after arcs so they sit on top
-  const cityG=svg.append('g');
-  cityMap.forEach((coord,name)=>{
-    const p=projection([coord[1],coord[0]]);
-    if(!p) return;
-    cityG.append('circle').attr('class','city-dot').attr('cx',p[0]).attr('cy',p[1]).attr('r',3.5);
-    cityG.append('text').attr('class','city-label').attr('x',p[0]+7).attr('y',p[1]+4).text(name);
+  const cityG = svg.append('g');
+  cityMap.forEach((coord, name) => {
+    const p = projection([coord[1], coord[0]]);
+    if (!p) return;
+    cityG.append('circle').attr('class', 'city-dot').attr('cx', p[0]).attr('cy', p[1]).attr('r', 3.5);
+    cityG.append('text').attr('class', 'city-label').attr('x', p[0] + 7).attr('y', p[1] + 4).text(name);
   });
 
-  // Animation — single rAF ID, no array growth
-  const LOOP=320, TRAVEL=200;
-  let frame=0;
-
-  // Pre-compute full arc path strings so we don't rebuild arcPath() each tick
-  const ghostPaths=arcData.map(a=>arcPath(a.op,a.dp));
-
-  function tick(){
-    const gt=frame%LOOP;
-    arcData.forEach((a,i)=>{
-      const lt=(gt-a.offset%LOOP+LOOP)%LOOP;
-      const t=Math.min(lt/TRAVEL,1);
-
-      // Dot position
-      const p=pointOnArc(a.op,a.dp,t);
-      dots[i].attr('cx',p[0]).attr('cy',p[1]).attr('opacity',t<1?0.9:0);
-
-      // Bright partial arc — at t=1 use the pre-computed full ghost path, skip poly rebuild
-      if(t>=1){
-        brightPaths[i].attr('d',ghostPaths[i]).attr('opacity',0.55);
+  const LOOP = 320, TRAVEL = 200;
+  let frame = 0;
+  const ghostPaths = arcData.map(a => arcPath(a.op, a.dp));
+  function tick() {
+    const gt = frame % LOOP;
+    arcData.forEach((a, i) => {
+      const lt = (gt - a.offset % LOOP + LOOP) % LOOP;
+      const t = Math.min(lt / TRAVEL, 1);
+      const p = pointOnArc(a.op, a.dp, t);
+      dots[i].attr('cx', p[0]).attr('cy', p[1]).attr('opacity', t < 1 ? 0.9 : 0);
+      if (t >= 1) {
+        brightPaths[i].attr('d', ghostPaths[i]).attr('opacity', 0.55);
       } else {
-        brightPaths[i].attr('d',partialArcPath(a.op,a.dp,t)).attr('opacity',Math.min(t*2,0.65));
+        brightPaths[i].attr('d', partialArcPath(a.op, a.dp, t)).attr('opacity', Math.min(t * 2, 0.65));
       }
     });
     frame++;
-    mapAnimId=requestAnimationFrame(tick); // single ID, overwrites previous
+    mapAnimId = requestAnimationFrame(tick);
   }
   tick();
 }
 
-// Quadratic bezier arc path (full)
-function arcPath(o,d){
-  const mx=(o[0]+d[0])/2, my=(o[1]+d[1])/2-Math.hypot(d[0]-o[0],d[1]-o[1])*0.35;
+function arcPath(o, d) {
+  const mx = (o[0] + d[0]) / 2, my = (o[1] + d[1]) / 2 - Math.hypot(d[0] - o[0], d[1] - o[1]) * 0.35;
   return `M${o[0]},${o[1]} Q${mx},${my} ${d[0]},${d[1]}`;
 }
-
-// Point on quadratic bezier at t
-function pointOnArc(o,d,t){
-  const mx=(o[0]+d[0])/2, my=(o[1]+d[1])/2-Math.hypot(d[0]-o[0],d[1]-o[1])*0.35;
-  const q=1-t;
-  return [q*q*o[0]+2*q*t*mx+t*t*d[0], q*q*o[1]+2*q*t*my+t*t*d[1]];
+function pointOnArc(o, d, t) {
+  const mx = (o[0] + d[0]) / 2, my = (o[1] + d[1]) / 2 - Math.hypot(d[0] - o[0], d[1] - o[1]) * 0.35;
+  const q = 1 - t;
+  return [q * q * o[0] + 2 * q * t * mx + t * t * d[0], q * q * o[1] + 2 * q * t * my + t * t * d[1]];
 }
-
-// Partial bezier path from o to t (polyline approximation)
-function partialArcPath(o,d,t){
-  if(t<=0) return `M${o[0]},${o[1]}`;
-  const steps=40;
-  const pts=[];
-  for(let i=0;i<=steps;i++){
-    pts.push(pointOnArc(o,d,t*(i/steps)));
+function partialArcPath(o, d, t) {
+  if (t <= 0) return `M${o[0]},${o[1]}`;
+  const steps = 40;
+  const pts = [];
+  for (let i = 0; i <= steps; i++) {
+    pts.push(pointOnArc(o, d, t * (i / steps)));
   }
-  return 'M'+pts.map(p=>p.join(',')).join('L');
+  return 'M' + pts.map(p => p.join(',')).join('L');
 }
 
 // ═══════════════════════════════════════════════
 // WAREHOUSE DATA + LOGIC
 // ═══════════════════════════════════════════════
-let WH = [];
 let whFormOpen = false;
 let whSubtab = 'all';
-
-function gotoWhSubtab(id,btn){
-  document.querySelectorAll('.wh-subtab').forEach(b=>b.classList.remove('on'));
+function gotoWhSubtab(id, btn) {
+  document.querySelectorAll('.wh-subtab').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
-  whSubtab=id;
+  whSubtab = id;
   renderWarehouse();
 }
+const WSLBL = { 'inbound': 'Inbound', 'in-store': 'In Store', 'dispatched': 'Dispatched' };
+const WSLOC = { 'bay-a': 'Bay A', 'bay-b': 'Bay B', 'bay-c': 'Bay C', 'cold-store': 'Cold Store', 'hazmat': 'Hazmat Zone' };
 
-const WSLBL = {'inbound':'Inbound','in-store':'In Store','dispatched':'Dispatched'};
-const WSLOC = {'bay-a':'Bay A','bay-b':'Bay B','bay-c':'Bay C','cold-store':'Cold Store','hazmat':'Hazmat Zone'};
-
-async function saveWH(){
-  localStorage.setItem('wh1',JSON.stringify(WH)); // local fallback cache
-  if(!sb||!currentOrgId) return;
-  try{
-    const rows=WH.map(w=>({
-      id: w.id>1e12?undefined:w.id,
-      org_id: currentOrgId,
-      cons:w.cons, desc:w.desc, qty:w.qty, boxes:w.boxes, loc:w.loc, stat:w.stat,
-      ship_ref:w.shipRef||null, notes:w.notes, overnight:w.overnight||null,
-      pickup:w.pickup||null, created_at:w.date, log:w.log||[]
-    }));
-    const toInsert=rows.filter(r=>r.id===undefined);
-    const toUpdate=rows.filter(r=>r.id!==undefined);
-    if(toUpdate.length) await sb.from('warehouse_items').upsert(toUpdate);
-    if(toInsert.length){
-      const {data,error}=await sb.from('warehouse_items').insert(toInsert).select();
-      if(!error&&data){
-        data.forEach(row=>{
-          const tempRow=WH.find(w=>w.cons===row.cons&&w.id>1e12);
-          if(tempRow) tempRow.id=row.id;
-        });
-      }
-    }
-    const localIds=WH.filter(w=>w.id<1e12).map(w=>w.id);
-    if(localIds.length){
-      await sb.from('warehouse_items').delete().eq('org_id',currentOrgId).not('id','in',`(${localIds.join(',')})`);
-    }
-  }catch(e){ console.error('saveWH() sync error:',e); toast('⚠ Sync failed — changes saved locally only.'); }
+function getWhRows() {
+  const q = (document.getElementById('whSearch') || { value: '' }).value.toLowerCase();
+  const ls = (document.getElementById('whLocSel') || { value: 'all' }).value;
+  const ss = (document.getElementById('whStatSel') || { value: 'all' }).value;
+  return WH.filter(w => {
+    const ml = ls === 'all' || w.loc === ls;
+    const ms = ss === 'all' || w.stat === ss;
+    const mq = !q || [w.cons, w.desc, w.notes, w.shipRef, WSLOC[w.loc] || w.loc].some(x => (x || '').toLowerCase().includes(q));
+    const mo = whSubtab !== 'overnight' || !!(w.overnight && w.overnight.trim());
+    return ml && ms && mq && mo;
+  }).sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
-function seedWH(){
-  return [
-    {id:101,cons:'JNB-2024-001',desc:'Electronics — fragile',qty:'12 pallets',boxes:'48 boxes',loc:'bay-a',stat:'in-store',shipRef:'',notes:'Handle with care',overnight:'Awaiting collection by consignee',pickup:'2024-09-12',date:'2024-09-10T08:00:00Z',log:[{d:'2024-09-10T08:00:00Z',t:'Received into Bay A'},{d:'2024-09-11T09:00:00Z',t:'Moved to shelf A-14'}]},
-    {id:102,cons:'DUR-2024-047',desc:'Raw minerals',qty:'3 containers',boxes:'',loc:'bay-b',stat:'inbound',shipRef:'DUR-2024-047',notes:'ETA tomorrow',overnight:'',pickup:'',date:'2024-11-01T10:30:00Z',log:[{d:'2024-11-01T10:30:00Z',t:'Logged as inbound'}]},
-    {id:103,cons:'CPT-2024-112',desc:'Perishables',qty:'40 crates',boxes:'40 boxes',loc:'cold-store',stat:'in-store',shipRef:'CPT-2024-112',notes:'Temp: 4°C',overnight:'Driver unavailable until morning — temp-controlled overnight hold',pickup:'2024-11-19',date:'2024-11-18T14:15:00Z',log:[{d:'2024-11-18T14:15:00Z',t:'Placed in cold store'},{d:'2024-11-20T08:00:00Z',t:'Temp check passed'}]},
-    {id:104,cons:'JNB-2024-089',desc:'Machinery parts',qty:'6 crates',boxes:'6 boxes',loc:'bay-c',stat:'dispatched',shipRef:'JNB-2024-089',notes:'',overnight:'',pickup:'',date:'2024-11-28T09:00:00Z',log:[{d:'2024-11-28T09:00:00Z',t:'Received'},{d:'2024-11-30T11:00:00Z',t:'Dispatched to freight'}]},
-    {id:105,cons:'JNB-2024-103',desc:'Refrigerated goods',qty:'1 reefer',boxes:'12 boxes',loc:'cold-store',stat:'inbound',shipRef:'JNB-2024-103',notes:'Reefer container',overnight:'Customs inspection pending — must stay overnight',pickup:'2024-12-03',date:'2024-12-02T06:00:00Z',log:[{d:'2024-12-02T06:00:00Z',t:'Logged as inbound'}]},
-    {id:106,cons:'DUR-2024-058',desc:'Auto components',qty:'8 crates',boxes:'8 boxes',loc:'bay-a',stat:'in-store',shipRef:'DUR-2024-058',notes:'',overnight:'Receiving dock closed — no outbound until 08:00',pickup:'2024-12-06',date:'2024-12-05T16:30:00Z',log:[{d:'2024-12-05T16:30:00Z',t:'Received late afternoon'},{d:'2024-12-05T17:00:00Z',t:'Overnight hold logged — dock closure'}]},
-  ];
+function whStatusBadge(s) {
+  const cols = { 'inbound': 'color:#707070;border-color:#383838', 'in-store': 'color:#b0b0b0;border-color:#545454', 'dispatched': 'color:#f0f0f0;border-color:#888' };
+  return `<span class="badge" style="${cols[s] || ''}">${WSLBL[s] || s}</span>`;
 }
 
-function getWhRows(){
-  const q=(document.getElementById('whSearch')||{value:''}).value.toLowerCase();
-  const ls=(document.getElementById('whLocSel')||{value:'all'}).value;
-  const ss=(document.getElementById('whStatSel')||{value:'all'}).value;
-  return WH.filter(w=>{
-    const ml=ls==='all'||w.loc===ls;
-    const ms=ss==='all'||w.stat===ss;
-    const mq=!q||[w.cons,w.desc,w.notes,w.shipRef,WSLOC[w.loc]||w.loc].some(x=>(x||'').toLowerCase().includes(q));
-    const mo=whSubtab!=='overnight'||!!(w.overnight&&w.overnight.trim());
-    return ml&&ms&&mq&&mo;
-  }).sort((a,b)=>new Date(b.date)-new Date(a.date));
-}
+function renderWarehouse() {
+  const overnightItems = WH.filter(w => w.overnight && w.overnight.trim());
+  document.getElementById('wh-total').textContent = WH.length;
+  document.getElementById('wh-inbound').textContent = WH.filter(w => w.stat === 'inbound').length;
+  document.getElementById('wh-instore').textContent = WH.filter(w => w.stat === 'in-store').length;
+  document.getElementById('wh-dispatched').textContent = WH.filter(w => w.stat === 'dispatched').length;
+  document.getElementById('wh-overnight').textContent = overnightItems.length;
+  document.getElementById('wh-count-all').textContent = WH.length;
+  document.getElementById('wh-count-overnight').textContent = overnightItems.length;
 
-function whStatusBadge(s){
-  const cols={'inbound':'color:#707070;border-color:#383838','in-store':'color:#b0b0b0;border-color:#545454','dispatched':'color:#f0f0f0;border-color:#888'};
-  return `<span class="badge" style="${cols[s]||''}">${WSLBL[s]||s}</span>`;
-}
-
-function renderWarehouse(){
-  // Update stats
-  const overnightItems=WH.filter(w=>w.overnight&&w.overnight.trim());
-  document.getElementById('wh-total').textContent=WH.length;
-  document.getElementById('wh-inbound').textContent=WH.filter(w=>w.stat==='inbound').length;
-  document.getElementById('wh-instore').textContent=WH.filter(w=>w.stat==='in-store').length;
-  document.getElementById('wh-dispatched').textContent=WH.filter(w=>w.stat==='dispatched').length;
-  document.getElementById('wh-overnight').textContent=overnightItems.length;
-
-  // Sub-tab counts
-  document.getElementById('wh-count-all').textContent=WH.length;
-  document.getElementById('wh-count-overnight').textContent=overnightItems.length;
-
-  const rows=getWhRows();
-  const el=document.getElementById('whContainer');
-  if(!rows.length){
+  const rows = getWhRows();
+  const el = document.getElementById('whContainer');
+  if (!rows.length) {
     let msg;
-    if(whSubtab==='overnight'){
-      msg='No overnight holds right now — nothing logged with an overnight reason.';
-    }else{
-      msg=WH.length===0?'No warehouse entries yet. Click <b>+ Add</b> to log a consignment.':'No results match your filter.';
+    if (whSubtab === 'overnight') {
+      msg = 'No overnight holds right now — nothing logged with an overnight reason.';
+    } else {
+      msg = WH.length === 0 ? 'No warehouse entries yet. Click <b>+ Add</b> to log a consignment.' : 'No results match your filter.';
     }
-    el.innerHTML=`<div class="wh-empty"><div class="wh-empty-sym">⬡</div>${msg}</div>`;
+    el.innerHTML = `<div class="wh-empty"><div class="wh-empty-sym">⬡</div>${msg}</div>`;
     return;
   }
 
-  el.innerHTML=rows.map(w=>`
+  el.innerHTML = rows.map(w => `
     <div class="wh-card" id="whcard-${w.id}">
       <div class="wh-card-hdr" onclick="toggleWhCard(${w.id})">
         <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
           <span class="wh-cons">${esc(w.cons)}</span>
           <span style="color:var(--t3);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(w.desc)}</span>
-          ${w.overnight?`<span style="font-size:10px;color:#c08050;border:1px solid #5a3a1a;padding:1px 6px;white-space:nowrap">Overnight</span>`:''}
+          ${w.overnight ? `<span style="font-size:10px;color:#c08050;border:1px solid #5a3a1a;padding:1px 6px;white-space:nowrap">Overnight</span>` : ''}
         </div>
         <div class="wh-meta">
-          <span class="loc-badge">${WSLOC[w.loc]||w.loc}</span>
-          ${w.boxes?`<span style="font-size:11px;color:var(--t3)">${esc(w.boxes)}</span>`:''}
+          <span class="loc-badge">${WSLOC[w.loc] || w.loc}</span>
+          ${w.boxes ? `<span style="font-size:11px;color:var(--t3)">${esc(w.boxes)}</span>` : ''}
           <span style="font-size:11px;color:var(--t3);min-width:60px;text-align:right">${esc(w.qty)}</span>
           ${whStatusBadge(w.stat)}
           <span style="color:var(--t3);font-size:13px">›</span>
@@ -1374,21 +1238,21 @@ function renderWarehouse(){
           <div class="wh-field"><div class="wh-label">Consignment</div><div class="wh-val">${esc(w.cons)}</div></div>
           <div class="wh-field"><div class="wh-label">Description</div><div class="wh-val">${esc(w.desc)}</div></div>
           <div class="wh-field"><div class="wh-label">Quantity</div><div class="wh-val">${esc(w.qty)}</div></div>
-          <div class="wh-field"><div class="wh-label">No. of Boxes</div><div class="wh-val">${esc(w.boxes)||'—'}</div></div>
-          <div class="wh-field"><div class="wh-label">Location</div><div class="wh-val">${WSLOC[w.loc]||w.loc}</div></div>
+          <div class="wh-field"><div class="wh-label">No. of Boxes</div><div class="wh-val">${esc(w.boxes) || '—'}</div></div>
+          <div class="wh-field"><div class="wh-label">Location</div><div class="wh-val">${WSLOC[w.loc] || w.loc}</div></div>
           <div class="wh-field"><div class="wh-label">Status</div><div class="wh-val">${whStatusBadge(w.stat)}</div></div>
           <div class="wh-field"><div class="wh-label">Date Logged</div><div class="wh-val">${fdate(w.date)}</div></div>
-          ${w.shipRef?`<div class="wh-field"><div class="wh-label">Linked Shipment</div><div class="wh-val">${esc(w.shipRef)}</div></div>`:''}
-          ${w.pickup?`<div class="wh-field"><div class="wh-label">Expected Pickup</div><div class="wh-val">${w.pickup}</div></div>`:''}
+          ${w.shipRef ? `<div class="wh-field"><div class="wh-label">Linked Shipment</div><div class="wh-val">${esc(w.shipRef)}</div></div>` : ''}
+          ${w.pickup ? `<div class="wh-field"><div class="wh-label">Expected Pickup</div><div class="wh-val">${w.pickup}</div></div>` : ''}
         </div>
-        ${w.overnight?`<div class="wh-overnight"><div class="wh-overnight-lbl">Overnight Reason</div>${esc(w.overnight)}</div>`:''}
-        ${w.notes?`<div class="wh-fnotes">${esc(w.notes)}</div>`:''}
+        ${w.overnight ? `<div class="wh-overnight"><div class="wh-overnight-lbl">Overnight Reason</div>${esc(w.overnight)}</div>` : ''}
+        ${w.notes ? `<div class="wh-fnotes">${esc(w.notes)}</div>` : ''}
         <div class="wh-row-actions">
-          ${['inbound','in-store','dispatched'].map(s=>`<button class="btn btn-xs${w.stat===s?' btn-p':''}" onclick="setWhStatus(${w.id},'${s}')">${WSLBL[s]}</button>`).join('')}
+          ${['inbound', 'in-store', 'dispatched'].map(s => `<button class="btn btn-xs${w.stat === s ? ' btn-p' : ''}" onclick="setWhStatus(${w.id},'${s}')">${WSLBL[s]}</button>`).join('')}
           <button class="btn btn-xs btn-d" onclick="delWhItem(${w.id})" style="margin-left:auto">Delete</button>
         </div>
         <div class="wh-section-ttl">Activity Log</div>
-        ${(w.log||[]).slice().reverse().map(l=>`<div class="wh-log-item"><span class="wh-log-time">${fdate(l.d)}</span><span class="wh-log-txt">${esc(l.t)}</span></div>`).join('')||'<div style="font-size:11px;color:var(--t3)">No log entries.</div>'}
+        ${(w.log || []).slice().reverse().map(l => `<div class="wh-log-item"><span class="wh-log-time">${fdate(l.d)}</span><span class="wh-log-txt">${esc(l.t)}</span></div>`).join('') || '<div style="font-size:11px;color:var(--t3)">No log entries.</div>'}
         <div style="display:flex;gap:7px;margin-top:10px">
           <input type="text" id="wlog-${w.id}" placeholder="Add log entry…" style="flex:1;font-size:11px;padding:6px 9px" onkeydown="if(event.key==='Enter')addWhLog(${w.id})">
           <button class="btn btn-sm" onclick="addWhLog(${w.id})">Log</button>
@@ -1397,152 +1261,145 @@ function renderWarehouse(){
     </div>`).join('');
 }
 
-function toggleWhCard(id){
-  const body=document.getElementById('whbody-'+id);
-  if(body) body.classList.toggle('open');
+function toggleWhCard(id) {
+  const body = document.getElementById('whbody-' + id);
+  if (body) body.classList.toggle('open');
 }
-
-function setWhStatus(id,st){
-  const w=WH.find(x=>x.id===id); if(!w) return;
-  w.stat=st;
-  w.log=w.log||[];
-  w.log.push({d:new Date().toISOString(),t:`Status → ${WSLBL[st]}`});
+function setWhStatus(id, st) {
+  const w = WH.find(x => x.id === id); if (!w) return;
+  w.stat = st;
+  w.log = w.log || [];
+  w.log.push({ d: new Date().toISOString(), t: `Status → ${WSLBL[st]}` });
   saveWH(); renderWarehouse(); toast('Warehouse status updated.');
 }
-
-function addWhLog(id){
-  const inp=document.getElementById('wlog-'+id); if(!inp) return;
-  const txt=inp.value.trim(); if(!txt) return;
-  const w=WH.find(x=>x.id===id); if(!w) return;
-  w.log=w.log||[];
-  w.log.push({d:new Date().toISOString(),t:txt});
+function addWhLog(id) {
+  const inp = document.getElementById('wlog-' + id); if (!inp) return;
+  const txt = inp.value.trim(); if (!txt) return;
+  const w = WH.find(x => x.id === id); if (!w) return;
+  w.log = w.log || [];
+  w.log.push({ d: new Date().toISOString(), t: txt });
   saveWH(); renderWarehouse(); toast('Log entry added.');
 }
-
-function delWhItem(id){
-  WH=WH.filter(w=>w.id!==id);
+function delWhItem(id) {
+  WH = WH.filter(w => w.id !== id);
   saveWH(); renderWarehouse(); toast('Removed from warehouse.');
 }
-
-function toggleWhForm(){
-  whFormOpen=!whFormOpen;
-  document.getElementById('whFormPanel').classList.toggle('on',whFormOpen);
-  document.getElementById('whAddBtn').textContent=whFormOpen?'✕ Cancel':'+ Add';
-  if(whFormOpen) setTimeout(()=>document.getElementById('wf-cons').focus(),50);
+function toggleWhForm() {
+  whFormOpen = !whFormOpen;
+  document.getElementById('whFormPanel').classList.toggle('on', whFormOpen);
+  document.getElementById('whAddBtn').textContent = whFormOpen ? '✕ Cancel' : '+ Add';
+  if (whFormOpen) setTimeout(() => document.getElementById('wf-cons').focus(), 50);
 }
-function cancelWhForm(){
-  whFormOpen=false;
+function cancelWhForm() {
+  whFormOpen = false;
   document.getElementById('whFormPanel').classList.remove('on');
-  document.getElementById('whAddBtn').textContent='+ Add';
-  ['wf-cons','wf-desc','wf-qty','wf-boxes','wf-ship','wf-notes','wf-overnight','wf-pickup'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-  document.getElementById('wf-stat').value='inbound';
-  document.getElementById('wf-loc').value='bay-a';
+  document.getElementById('whAddBtn').textContent = '+ Add';
+  ['wf-cons', 'wf-desc', 'wf-qty', 'wf-boxes', 'wf-ship', 'wf-notes', 'wf-overnight', 'wf-pickup'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('wf-stat').value = 'inbound';
+  document.getElementById('wf-loc').value = 'bay-a';
 }
-
-function addWhItem(){
-  const cons=document.getElementById('wf-cons').value.trim();
-  const desc=document.getElementById('wf-desc').value.trim();
-  const qty=document.getElementById('wf-qty').value.trim();
-  if(!cons||!desc){toast('Consignment and description are required.');return;}
-  const now=new Date().toISOString();
-  const overnight=document.getElementById('wf-overnight').value.trim();
+function addWhItem() {
+  const cons = document.getElementById('wf-cons').value.trim();
+  const desc = document.getElementById('wf-desc').value.trim();
+  const qty = document.getElementById('wf-qty').value.trim();
+  if (!cons || !desc) { toast('Consignment and description are required.'); return; }
+  const now = new Date().toISOString();
+  const overnight = document.getElementById('wf-overnight').value.trim();
   WH.push({
-    id:Date.now(),cons,desc,
-    qty:qty||'—',
-    boxes:document.getElementById('wf-boxes').value.trim(),
-    loc:document.getElementById('wf-loc').value,
-    stat:document.getElementById('wf-stat').value,
-    shipRef:document.getElementById('wf-ship').value.trim(),
-    notes:document.getElementById('wf-notes').value.trim(),
+    id: Date.now(), cons, desc,
+    qty: qty || '—',
+    boxes: document.getElementById('wf-boxes').value.trim(),
+    loc: document.getElementById('wf-loc').value,
+    stat: document.getElementById('wf-stat').value,
+    shipRef: document.getElementById('wf-ship').value.trim(),
+    notes: document.getElementById('wf-notes').value.trim(),
     overnight,
-    pickup:document.getElementById('wf-pickup').value,
-    date:now,
-    log:[{d:now,t:'Logged into warehouse'+(overnight?` — overnight: ${overnight}`:'')}]
+    pickup: document.getElementById('wf-pickup').value,
+    date: now,
+    log: [{ d: now, t: 'Logged into warehouse' + (overnight ? ` — overnight: ${overnight}` : '') }]
   });
   saveWH(); cancelWhForm(); renderWarehouse(); toast('Warehouse entry added.');
 }
-
-function exportWarehouseCSV(){
-  const rows=getWhRows(); if(!rows.length){toast('Nothing to export.');return;}
-  const hdr=['Consignment','Description','Quantity','Location','Status','Linked Shipment','Date','Notes'];
-  const lines=[hdr.join(','),...rows.map(w=>[w.cons,w.desc,w.qty,WSLOC[w.loc]||w.loc,w.stat,w.shipRef||'',fdate(w.date),w.notes].map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(','))];
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([lines.join('\r\n')],{type:'text/csv'}));
-  a.download=`warehouse-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+function exportWarehouseCSV() {
+  const rows = getWhRows(); if (!rows.length) { toast('Nothing to export.'); return; }
+  const hdr = ['Consignment', 'Description', 'Quantity', 'Location', 'Status', 'Linked Shipment', 'Date', 'Notes'];
+  const lines = [hdr.join(','), ...rows.map(w => [w.cons, w.desc, w.qty, WSLOC[w.loc] || w.loc, w.stat, w.shipRef || '', fdate(w.date), w.notes].map(x => `"${String(x || '').replace(/"/g, '""')}"`).join(','))];
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([lines.join('\r\n')], { type: 'text/csv' }));
+  a.download = `warehouse-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
   toast('Warehouse CSV exported.');
 }
 
 // ═══════════════════════════════════════════════
 // FORM
 // ═══════════════════════════════════════════════
-function toggleForm(){
-  formOpen=!formOpen;
-  document.getElementById('formPanel').classList.toggle('on',formOpen);
-  document.getElementById('addBtn').textContent=formOpen?'✕ Cancel':'+ Add';
-  if(formOpen)setTimeout(()=>document.getElementById('f-sender').focus(),60);
+function toggleForm() {
+  formOpen = !formOpen;
+  document.getElementById('formPanel').classList.toggle('on', formOpen);
+  document.getElementById('addBtn').textContent = formOpen ? '✕ Cancel' : '+ Add';
+  if (formOpen) setTimeout(() => document.getElementById('f-sender').focus(), 60);
 }
-function cancelForm(){
-  formOpen=false;
+function cancelForm() {
+  formOpen = false;
   document.getElementById('formPanel').classList.remove('on');
-  document.getElementById('addBtn').textContent='+ Add';
+  document.getElementById('addBtn').textContent = '+ Add';
   clearForm();
 }
-function clearForm(){
-  ['f-sender','f-orig','f-receiver','f-dest','f-cons','f-notes','f-cost','f-expdate'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('f-stat').value='pending';
-  document.getElementById('f-pri').value='normal';
+function clearForm() {
+  ['f-sender', 'f-orig', 'f-receiver', 'f-dest', 'f-cons', 'f-notes', 'f-cost', 'f-expdate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('f-stat').value = 'pending';
+  document.getElementById('f-pri').value = 'normal';
 }
-function gv(id){ return document.getElementById(id).value.trim(); }
-
-function addShipment(){
-  const sender=gv('f-sender'),orig=gv('f-orig'),receiver=gv('f-receiver'),dest=gv('f-dest'),cons=gv('f-cons');
-  if(!sender||!orig||!receiver||!dest||!cons){ toast('All fields except notes are required.'); return; }
-  const now=new Date().toISOString();
-  const cost=parseFloat(document.getElementById('f-cost').value)||null;
-  DB.push({id:Date.now(),cons,sender,orig,receiver,dest,
-    stat:document.getElementById('f-stat').value,
-    pri:document.getElementById('f-pri').value,
-    notes:gv('f-notes'),
-    expectedDate:document.getElementById('f-expdate').value||null,
+function gv(id) { return document.getElementById(id).value.trim(); }
+function addShipment() {
+  const sender = gv('f-sender'), orig = gv('f-orig'), receiver = gv('f-receiver'), dest = gv('f-dest'), cons = gv('f-cons');
+  if (!sender || !orig || !receiver || !dest || !cons) { toast('All fields except notes are required.'); return; }
+  const now = new Date().toISOString();
+  const cost = parseFloat(document.getElementById('f-cost').value) || null;
+  DB.push({ id: Date.now(), cons, sender, orig, receiver, dest,
+    stat: document.getElementById('f-stat').value,
+    pri: document.getElementById('f-pri').value,
+    notes: gv('f-notes'),
+    expectedDate: document.getElementById('f-expdate').value || null,
     cost,
-    date:now,history:[{d:now,t:'Created'}]});
+    date: now, history: [{ d: now, t: 'Created' }] });
   save(); clearForm(); cancelForm(); refresh(); toast('Shipment added.');
 }
 
 // ═══════════════════════════════════════════════
 // TABLE
 // ═══════════════════════════════════════════════
-function getRows(){
-  const q=document.getElementById('searchInput').value.toLowerCase();
-  const sf=document.getElementById('filterSel').value;
-  const pf=document.getElementById('priSel').value;
-  return DB.filter(s=>{
-    const ms=sf==='all'||s.stat===sf;
-    const mp=pf==='all'||s.pri===pf;
-    const mq=!q||[s.cons,s.sender,s.receiver,s.orig,s.dest,s.notes].some(x=>(x||'').toLowerCase().includes(q));
-    const mo=!overdueFilter||isOverdue(s);
-    return ms&&mp&&mq&&mo;
-  }).sort((a,b)=>{
-    const ao=isOverdue(a)?0:1, bo=isOverdue(b)?0:1;
-    if(ao!==bo) return ao-bo;
-    let va=a[sortK],vb=b[sortK];
-    if(sortK==='stat'){va=SO[va]??0;vb=SO[vb]??0;}
-    if(sortK==='pri'){const PO={high:0,normal:1,low:2};va=PO[va]??1;vb=PO[vb]??1;}
-    return va<vb?-sortD:va>vb?sortD:0;
+function getRows() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const sf = document.getElementById('filterSel').value;
+  const pf = document.getElementById('priSel').value;
+  return DB.filter(s => {
+    const ms = sf === 'all' || s.stat === sf;
+    const mp = pf === 'all' || s.pri === pf;
+    const mq = !q || [s.cons, s.sender, s.receiver, s.orig, s.dest, s.notes].some(x => (x || '').toLowerCase().includes(q));
+    const mo = !overdueFilter || isOverdue(s);
+    return ms && mp && mq && mo;
+  }).sort((a, b) => {
+    const ao = isOverdue(a) ? 0 : 1, bo = isOverdue(b) ? 0 : 1;
+    if (ao !== bo) return ao - bo;
+    let va = a[sortK], vb = b[sortK];
+    if (sortK === 'stat') { va = SO[va] ?? 0; vb = SO[vb] ?? 0; }
+    if (sortK === 'pri') { const PO = { high: 0, normal: 1, low: 2 }; va = PO[va] ?? 1; vb = PO[vb] ?? 1; }
+    return va < vb ? -sortD : va > vb ? sortD : 0;
   });
 }
 
-function renderTable(){
+function renderTable() {
   updateStats();
-  const rows=getRows();
-  const el=document.getElementById('tableContainer');
-  if(!rows.length){
-    el.innerHTML=`<div class="empty"><div class="empty-sym">⬡</div>${DB.length===0?'No shipments yet. Click <b>+ Add</b> to get started.':'No results match your filters.'}</div>`;
+  const rows = getRows();
+  const el = document.getElementById('tableContainer');
+  if (!rows.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-sym">⬡</div>${DB.length === 0 ? 'No shipments yet. Click <b>+ Add</b> to get started.' : 'No results match your filters.'}</div>`;
     return;
   }
-  const ar=k=>`<span class="sarr">${sortK===k?(sortD===1?'↑':'↓'):'↕'}</span>`;
-  const sc=k=>sortK===k?' ak':'';
-  el.innerHTML=`<div class="tbl-wrap"><table>
+  const ar = k => `<span class="sarr">${sortK === k ? (sortD === 1 ? '↑' : '↓') : '↕'}</span>`;
+  const sc = k => sortK === k ? ' ak' : '';
+  el.innerHTML = `<div class="tbl-wrap"><table>
     <colgroup>
       <col style="width:30px"><col style="width:22px"><col style="width:130px">
       <col style="width:120px"><col style="width:90px"><col style="width:120px">
@@ -1567,38 +1424,38 @@ function renderTable(){
     <tbody id="tbody">${rows.map(rowHTML).join('')}</tbody>
   </table></div>`;
   bindDrag();
-  document.getElementById('chkAll').checked=rows.length>0&&rows.every(s=>sel.has(s.id));
+  document.getElementById('chkAll').checked = rows.length > 0 && rows.every(s => sel.has(s.id));
 }
 
-function rowHTML(s){
-  const ck=sel.has(s.id)?'checked':'';
-  const priHTML=s.pri==='high'?`<span class="pri pri-high">High</span>`:
-    s.pri==='low'?`<span class="pri pri-low">Low</span>`:`<span class="pri pri-normal">—</span>`;
-  const overdue=isOverdue(s);
-  const atRisk=isAtRisk(s);
-  const days=daysUntilDue(s);
-  let dueBadge='—';
-  if(s.expectedDate && s.stat!=='delivered'){
-    if(overdue) dueBadge=`<span class="due-badge due-overdue">Overdue ${Math.abs(days)}d</span>`;
-    else if(atRisk) dueBadge=`<span class="due-badge due-atrisk">Due tomorrow</span>`;
-    else if(days!==null) dueBadge=`<span class="due-badge due-ontrack">${days}d left</span>`;
-  } else if(s.stat==='delivered'){
-    dueBadge=`<span style="font-size:10px;color:var(--t3)">Delivered</span>`;
+function rowHTML(s) {
+  const ck = sel.has(s.id) ? 'checked' : '';
+  const priHTML = s.pri === 'high' ? `<span class="pri pri-high">High</span>` :
+    s.pri === 'low' ? `<span class="pri pri-low">Low</span>` : `<span class="pri pri-normal">—</span>`;
+  const overdue = isOverdue(s);
+  const atRisk = isAtRisk(s);
+  const days = daysUntilDue(s);
+  let dueBadge = '—';
+  if (s.expectedDate && s.stat !== 'delivered') {
+    if (overdue) dueBadge = `<span class="due-badge due-overdue">Overdue ${Math.abs(days)}d</span>`;
+    else if (atRisk) dueBadge = `<span class="due-badge due-atrisk">Due tomorrow</span>`;
+    else if (days !== null) dueBadge = `<span class="due-badge due-ontrack">${days}d left</span>`;
+  } else if (s.stat === 'delivered') {
+    dueBadge = `<span style="font-size:10px;color:var(--t3)">Delivered</span>`;
   }
-  const rowClass=[sel.has(s.id)?'sel':'', overdue?'overdue-row':''].filter(Boolean).join(' ');
+  const rowClass = [sel.has(s.id) ? 'sel' : '', overdue ? 'overdue-row' : ''].filter(Boolean).join(' ');
   return `<tr data-id="${s.id}" draggable="true" class="${rowClass}" onclick="maybeOpenDrawer(event,${s.id})">
     <td onclick="event.stopPropagation()"><input type="checkbox" class="rchk" ${ck} onchange="toggleRow(${s.id},this.checked)"></td>
     <td onclick="event.stopPropagation()"><span class="drag-h">⣿</span></td>
-    <td class="${overdue?'overdue-cell':''}" style="font-weight:500;letter-spacing:.02em" ondblclick="event.stopPropagation();editCell(this,'cons',${s.id})">${esc(s.cons)}</td>
-    <td style="color:var(--t2)" ondblclick="event.stopPropagation();editCell(this,'sender',${s.id})">${esc(s.sender||'')}</td>
+    <td class="${overdue ? 'overdue-cell' : ''}" style="font-weight:500;letter-spacing:.02em" ondblclick="event.stopPropagation();editCell(this,'cons',${s.id})">${esc(s.cons)}</td>
+    <td style="color:var(--t2)" ondblclick="event.stopPropagation();editCell(this,'sender',${s.id})">${esc(s.sender || '')}</td>
     <td style="color:var(--t3)" ondblclick="event.stopPropagation();editCell(this,'orig',${s.id})">${esc(s.orig)}</td>
-    <td style="color:var(--t2)" ondblclick="event.stopPropagation();editCell(this,'receiver',${s.id})">${esc(s.receiver||'')}</td>
+    <td style="color:var(--t2)" ondblclick="event.stopPropagation();editCell(this,'receiver',${s.id})">${esc(s.receiver || '')}</td>
     <td style="color:var(--t3)" ondblclick="event.stopPropagation();editCell(this,'dest',${s.id})">${esc(s.dest)}</td>
     <td ondblclick="event.stopPropagation();editStatus(this,${s.id})">${badge(s.stat)}</td>
     <td ondblclick="event.stopPropagation();editPri(this,${s.id})">${priHTML}</td>
-    <td style="font-size:11px;color:var(--t3)">${s.expectedDate||'—'}</td>
+    <td style="font-size:11px;color:var(--t3)">${s.expectedDate || '—'}</td>
     <td>${dueBadge}</td>
-    <td style="color:var(--t3);font-size:11px" ondblclick="event.stopPropagation();editCell(this,'notes',${s.id})">${esc(s.notes)||'—'}</td>
+    <td style="color:var(--t3);font-size:11px" ondblclick="event.stopPropagation();editCell(this,'notes',${s.id})">${esc(s.notes) || '—'}</td>
     <td onclick="event.stopPropagation()"><button class="del-btn" onclick="delOne(${s.id})">×</button></td>
   </tr>`;
 }
@@ -1606,36 +1463,36 @@ function rowHTML(s){
 // ═══════════════════════════════════════════════
 // DRAWER
 // ═══════════════════════════════════════════════
-function maybeOpenDrawer(e,id){
-  if(e.target.closest('input,button,select,.drag-h')) return;
+function maybeOpenDrawer(e, id) {
+  if (e.target.closest('input,button,select,.drag-h')) return;
   openDrawer(id);
 }
-function openDrawer(id){
-  const s=DB.find(x=>x.id===id); if(!s) return;
-  drawerID=id;
-  document.getElementById('drawerTitle').textContent=s.cons;
-  document.getElementById('drawerBody').innerHTML=drawerHTML(s);
+function openDrawer(id) {
+  const s = DB.find(x => x.id === id); if (!s) return;
+  drawerID = id;
+  document.getElementById('drawerTitle').textContent = s.cons;
+  document.getElementById('drawerBody').innerHTML = drawerHTML(s);
   document.getElementById('drawer').classList.add('on');
   document.getElementById('drawerOverlay').classList.add('on');
 }
-function closeDrawer(){
+function closeDrawer() {
   document.getElementById('drawer').classList.remove('on');
   document.getElementById('drawerOverlay').classList.remove('on');
-  drawerID=null;
+  drawerID = null;
 }
-function drawerHTML(s){
-  const overdue=isOverdue(s);
-  const days=daysUntilDue(s);
-  const hist=(s.history||[]).slice().reverse().map(h=>`
+function drawerHTML(s) {
+  const overdue = isOverdue(s);
+  const days = daysUntilDue(s);
+  const hist = (s.history || []).slice().reverse().map(h => `
     <div class="hist-item"><span class="hist-date">${fdate(h.d)}</span><span class="hist-txt">${esc(h.t)}</span></div>`).join('');
   return `
-  ${overdue?`<div style="background:#2a1010;border:1px solid #4a2020;color:#e88888;padding:10px 14px;font-size:11px;margin-bottom:16px;letter-spacing:.04em">⚠ This shipment is <strong>${Math.abs(days)} day${Math.abs(days)!==1?'s':''} overdue</strong>. Expected ${s.expectedDate}.</div>`:''}
+  ${overdue ? `<div style="background:#2a1010;border:1px solid #4a2020;color:#e88888;padding:10px 14px;font-size:11px;margin-bottom:16px;letter-spacing:.04em">⚠ This shipment is <strong>${Math.abs(days)} day${Math.abs(days) !== 1 ? 's' : ''} overdue</strong>. Expected ${s.expectedDate}.</div>` : ''}
   <div class="d-section">
     <div class="d-sec-ttl">Parties</div>
     <div class="d-grid">
-      <div class="d-field"><div class="d-label">Sender</div><div class="d-val">${esc(s.sender||'—')}</div></div>
+      <div class="d-field"><div class="d-label">Sender</div><div class="d-val">${esc(s.sender || '—')}</div></div>
       <div class="d-field"><div class="d-label">Origin</div><div class="d-val">${esc(s.orig)}</div></div>
-      <div class="d-field"><div class="d-label">Receiver</div><div class="d-val">${esc(s.receiver||'—')}</div></div>
+      <div class="d-field"><div class="d-label">Receiver</div><div class="d-val">${esc(s.receiver || '—')}</div></div>
       <div class="d-field"><div class="d-label">Destination</div><div class="d-val">${esc(s.dest)}</div></div>
     </div>
   </div>
@@ -1646,81 +1503,81 @@ function drawerHTML(s){
       <div class="d-field"><div class="d-label">Date Added</div><div class="d-val">${fdate(s.date)}</div></div>
       <div class="d-field"><div class="d-label">Status</div><div class="d-val">${badge(s.stat)}</div></div>
       <div class="d-field"><div class="d-label">Priority</div><div class="d-val">${priLabel(s.pri)}</div></div>
-      ${s.expectedDate?`<div class="d-field"><div class="d-label">Expected Delivery</div><div class="d-val ${overdue?'overdue-cell':''}">${s.expectedDate}</div></div>`:''}
-      ${s.cost?`<div class="d-field"><div class="d-label">Freight Cost</div><div class="d-val">R ${Number(s.cost).toLocaleString()}</div></div>`:''}
+      ${s.expectedDate ? `<div class="d-field"><div class="d-label">Expected Delivery</div><div class="d-val ${overdue ? 'overdue-cell' : ''}">${s.expectedDate}</div></div>` : ''}
+      ${s.cost ? `<div class="d-field"><div class="d-label">Freight Cost</div><div class="d-val">R ${Number(s.cost).toLocaleString()}</div></div>` : ''}
     </div>
-    ${s.notes?`<div class="d-field" style="margin-top:12px"><div class="d-label">Notes</div><div class="d-notes">${esc(s.notes)}</div></div>`:''}
+    ${s.notes ? `<div class="d-field" style="margin-top:12px"><div class="d-label">Notes</div><div class="d-notes">${esc(s.notes)}</div></div>` : ''}
   </div>
   <div class="d-section">
     <div class="d-sec-ttl">Update Status</div>
     <div class="d-actions">
-      ${['pending','in-transit','cleared','delivered'].map(st=>`<button class="btn btn-xs${s.stat===st?' btn-p':''}" onclick="setStatus(${s.id},'${st}')">${SLBL[st]}</button>`).join('')}
+      ${['pending', 'in-transit', 'cleared', 'delivered'].map(st => `<button class="btn btn-xs${s.stat === st ? ' btn-p' : ''}" onclick="setStatus(${s.id},'${st}')">${SLBL[st]}</button>`).join('')}
     </div>
   </div>
   <div class="d-section">
     <div class="d-sec-ttl">History</div>
-    ${hist||'<div style="font-size:11px;color:var(--t3)">No history recorded.</div>'}
+    ${hist || '<div style="font-size:11px;color:var(--t3)">No history recorded.</div>'}
   </div>`;
 }
-function setStatus(id,st){
-  const s=DB.find(x=>x.id===id); if(!s) return;
-  s.stat=st;
-  s.history=s.history||[];
-  s.history.push({d:new Date().toISOString(),t:`Status → ${SLBL[st]}`});
+function setStatus(id, st) {
+  const s = DB.find(x => x.id === id); if (!s) return;
+  s.stat = st;
+  s.history = s.history || [];
+  s.history.push({ d: new Date().toISOString(), t: `Status → ${SLBL[st]}` });
   save(); refresh(); openDrawer(id); toast('Status updated.');
 }
-function priLabel(p){ return p==='high'?'<span class="pri pri-high">High</span>':p==='low'?'<span class="pri pri-low">Low</span>':'<span class="pri pri-normal">Normal</span>'; }
+function priLabel(p) { return p === 'high' ? '<span class="pri pri-high">High</span>' : p === 'low' ? '<span class="pri pri-low">Low</span>' : '<span class="pri pri-normal">Normal</span>'; }
 
 // ═══════════════════════════════════════════════
 // INLINE EDIT
 // ═══════════════════════════════════════════════
-function editCell(td,field,id){
-  const s=DB.find(x=>x.id===id); if(!s) return;
-  const old=s[field]||'';
+function editCell(td, field, id) {
+  const s = DB.find(x => x.id === id); if (!s) return;
+  const old = s[field] || '';
   td.classList.add('editing');
-  td.innerHTML=`<input class="cell-edit" value="${esc(old)}">`;
-  const inp=td.querySelector('input'); inp.focus(); inp.select();
-  const commit=()=>{ const nv=inp.value.trim(); if(nv!==old&&(field!=='cons'||nv)){s[field]=nv;save();refresh();}else renderTable(); };
-  inp.addEventListener('blur',commit);
-  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();commit();}if(e.key==='Escape')renderTable(); });
+  td.innerHTML = `<input class="cell-edit" value="${esc(old)}">`;
+  const inp = td.querySelector('input'); inp.focus(); inp.select();
+  const commit = () => { const nv = inp.value.trim(); if (nv !== old && (field !== 'cons' || nv)) { s[field] = nv; save(); refresh(); } else renderTable(); };
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } if (e.key === 'Escape') renderTable(); });
 }
-function editStatus(td,id){
-  const s=DB.find(x=>x.id===id); if(!s) return;
+function editStatus(td, id) {
+  const s = DB.find(x => x.id === id); if (!s) return;
   td.classList.add('editing');
-  td.innerHTML=`<select class="cell-edit">${['pending','in-transit','cleared','delivered'].map(v=>`<option value="${v}"${s.stat===v?' selected':''}>${SLBL[v]}</option>`).join('')}</select>`;
-  const sel2=td.querySelector('select'); sel2.focus();
-  const commit=()=>{ if(s.stat!==sel2.value){s.stat=sel2.value;s.history=s.history||[];s.history.push({d:new Date().toISOString(),t:`Status → ${SLBL[sel2.value]}`});save();refresh();}else renderTable(); };
-  sel2.addEventListener('blur',commit); sel2.addEventListener('change',commit);
-  sel2.addEventListener('keydown',e=>{ if(e.key==='Escape')renderTable(); });
+  td.innerHTML = `<select class="cell-edit">${['pending', 'in-transit', 'cleared', 'delivered'].map(v => `<option value="${v}"${s.stat === v ? ' selected' : ''}>${SLBL[v]}</option>`).join('')}</select>`;
+  const sel2 = td.querySelector('select'); sel2.focus();
+  const commit = () => { if (s.stat !== sel2.value) { s.stat = sel2.value; s.history = s.history || []; s.history.push({ d: new Date().toISOString(), t: `Status → ${SLBL[sel2.value]}` }); save(); refresh(); } else renderTable(); };
+  sel2.addEventListener('blur', commit); sel2.addEventListener('change', commit);
+  sel2.addEventListener('keydown', e => { if (e.key === 'Escape') renderTable(); });
 }
-function editPri(td,id){
-  const s=DB.find(x=>x.id===id); if(!s) return;
+function editPri(td, id) {
+  const s = DB.find(x => x.id === id); if (!s) return;
   td.classList.add('editing');
-  td.innerHTML=`<select class="cell-edit">${['high','normal','low'].map(v=>`<option value="${v}"${s.pri===v?' selected':''}>${PLBL[v]}</option>`).join('')}</select>`;
-  const sel2=td.querySelector('select'); sel2.focus();
-  const commit=()=>{ s.pri=sel2.value; save(); refresh(); };
-  sel2.addEventListener('blur',commit); sel2.addEventListener('change',commit);
-  sel2.addEventListener('keydown',e=>{ if(e.key==='Escape')renderTable(); });
+  td.innerHTML = `<select class="cell-edit">${['high', 'normal', 'low'].map(v => `<option value="${v}"${s.pri === v ? ' selected' : ''}>${PLBL[v]}</option>`).join('')}</select>`;
+  const sel2 = td.querySelector('select'); sel2.focus();
+  const commit = () => { s.pri = sel2.value; save(); refresh(); };
+  sel2.addEventListener('blur', commit); sel2.addEventListener('change', commit);
+  sel2.addEventListener('keydown', e => { if (e.key === 'Escape') renderTable(); });
 }
 
 // ═══════════════════════════════════════════════
 // DRAG TO REORDER
 // ═══════════════════════════════════════════════
-function bindDrag(){
-  const tbody=document.getElementById('tbody'); if(!tbody) return;
-  let from=null;
-  tbody.querySelectorAll('tr').forEach((tr,i)=>{
-    tr.addEventListener('dragstart',e=>{from=i;tr.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
-    tr.addEventListener('dragend',()=>{tr.classList.remove('dragging');tbody.querySelectorAll('tr').forEach(r=>r.classList.remove('drag-over'));});
-    tr.addEventListener('dragover',e=>{e.preventDefault();tbody.querySelectorAll('tr').forEach(r=>r.classList.remove('drag-over'));tr.classList.add('drag-over');});
-    tr.addEventListener('drop',e=>{
+function bindDrag() {
+  const tbody = document.getElementById('tbody'); if (!tbody) return;
+  let from = null;
+  tbody.querySelectorAll('tr').forEach((tr, i) => {
+    tr.addEventListener('dragstart', e => { from = i; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+    tr.addEventListener('dragend', () => { tr.classList.remove('dragging'); tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over')); });
+    tr.addEventListener('dragover', e => { e.preventDefault(); tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over')); tr.classList.add('drag-over'); });
+    tr.addEventListener('drop', e => {
       e.preventDefault();
-      if(from===null||from===i) return;
-      const rows=getRows(),fid=rows[from]?.id,tid=rows[i]?.id;
-      if(!fid||!tid) return;
-      const fi=DB.findIndex(s=>s.id===fid),ti=DB.findIndex(s=>s.id===tid);
-      const [mv]=DB.splice(fi,1); DB.splice(ti,0,mv);
-      save(); renderTable(); from=null;
+      if (from === null || from === i) return;
+      const rows = getRows(), fid = rows[from]?.id, tid = rows[i]?.id;
+      if (!fid || !tid) return;
+      const fi = DB.findIndex(s => s.id === fid), ti = DB.findIndex(s => s.id === tid);
+      const [mv] = DB.splice(fi, 1); DB.splice(ti, 0, mv);
+      save(); renderTable(); from = null;
     });
   });
 }
@@ -1728,393 +1585,215 @@ function bindDrag(){
 // ═══════════════════════════════════════════════
 // SORT + SELECTION + BULK
 // ═══════════════════════════════════════════════
-function sortBy(k){ if(sortK===k)sortD*=-1; else{sortK=k;sortD=1;} renderTable(); }
-function toggleRow(id,checked){ if(checked)sel.add(id);else sel.delete(id); updateBulk(); const tr=document.querySelector(`tr[data-id="${id}"]`); if(tr)tr.classList.toggle('sel',checked); }
-function chkAllRows(checked){ getRows().forEach(s=>{if(checked)sel.add(s.id);else sel.delete(s.id);}); renderTable(); updateBulk(); }
-function clearSel(){ sel.clear(); updateBulk(); renderTable(); }
-function updateBulk(){ const n=sel.size; document.getElementById('bulkBar').classList.toggle('on',n>0); document.getElementById('bulkCount').textContent=`${n} shipment${n===1?'':'s'} selected`; }
-function bulkStatus(){
-  const ns=document.getElementById('bulkStatSel').value,np=document.getElementById('bulkPriSel').value;
-  if(!ns&&!np){toast('Choose a status or priority.');return;}
-  DB.forEach(s=>{if(sel.has(s.id)){if(ns)s.stat=ns;if(np)s.pri=np;}});
+function sortBy(k) { if (sortK === k) sortD *= -1; else { sortK = k; sortD = 1; } renderTable(); }
+function toggleRow(id, checked) { if (checked) sel.add(id); else sel.delete(id); updateBulk(); const tr = document.querySelector(`tr[data-id="${id}"]`); if (tr) tr.classList.toggle('sel', checked); }
+function chkAllRows(checked) { getRows().forEach(s => { if (checked) sel.add(s.id); else sel.delete(s.id); }); renderTable(); updateBulk(); }
+function clearSel() { sel.clear(); updateBulk(); renderTable(); }
+function updateBulk() { const n = sel.size; document.getElementById('bulkBar').classList.toggle('on', n > 0); document.getElementById('bulkCount').textContent = `${n} shipment${n === 1 ? '' : 's'} selected`; }
+function bulkStatus() {
+  const ns = document.getElementById('bulkStatSel').value, np = document.getElementById('bulkPriSel').value;
+  if (!ns && !np) { toast('Choose a status or priority.'); return; }
+  DB.forEach(s => { if (sel.has(s.id)) { if (ns) s.stat = ns; if (np) s.pri = np; } });
   save(); clearSel(); refresh(); toast('Updated.');
 }
-function bulkDelete(){ const n=sel.size; if(!n)return; DB=DB.filter(s=>!sel.has(s.id)); save(); clearSel(); refresh(); toast(`${n} shipment${n===1?'':'s'} deleted.`); }
-function delOne(id){ DB=DB.filter(s=>s.id!==id); sel.delete(id); save(); refresh(); toast('Removed.'); }
+function bulkDelete() { const n = sel.size; if (!n) return; DB = DB.filter(s => !sel.has(s.id)); save(); clearSel(); refresh(); toast(`${n} shipment${n === 1 ? '' : 's'} deleted.`); }
+function delOne(id) { DB = DB.filter(s => s.id !== id); sel.delete(id); save(); refresh(); toast('Removed.'); }
 
 // ═══════════════════════════════════════════════
 // IMPORT CSV
 // ═══════════════════════════════════════════════
-function openImport(){
+function openImport() {
   document.getElementById('importOverlay').classList.add('on');
-  document.getElementById('importPreviewWrap').style.display='none';
-  document.getElementById('importLog').style.display='none';
-  document.getElementById('doImportBtn').style.display='none';
-  document.getElementById('csvFileIn').value='';
-  csvParsed=null;
+  document.getElementById('importPreviewWrap').style.display = 'none';
+  document.getElementById('importLog').style.display = 'none';
+  document.getElementById('doImportBtn').style.display = 'none';
+  document.getElementById('csvFileIn').value = '';
+  csvParsed = null;
 }
-function closeImport(){ document.getElementById('importOverlay').classList.remove('on'); csvParsed=null; }
-
-const dropZone=document.getElementById('dropZone');
-dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag');});
-dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag'));
-dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)parseCSVFile(f);});
-
-function handleCSVFile(inp){ if(inp.files[0])parseCSVFile(inp.files[0]); }
-function parseCSVFile(file){ const r=new FileReader(); r.onload=e=>parseCSVText(e.target.result); r.readAsText(file); }
-function parseCSVText(txt){
-  const lines=txt.trim().split(/\r?\n/).filter(Boolean);
-  if(lines.length<2){toast('CSV needs a header row and at least one data row.');return;}
-  const parseRow=row=>{
-    const cols=[]; let cur='',inQ=false;
-    for(let i=0;i<row.length;i++){
-      const c=row[i];
-      if(c==='"'){if(inQ&&row[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
-      else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
-      else cur+=c;
+function closeImport() { document.getElementById('importOverlay').classList.remove('on'); csvParsed = null; }
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag'); const f = e.dataTransfer.files[0]; if (f) parseCSVFile(f); });
+function handleCSVFile(inp) { if (inp.files[0]) parseCSVFile(inp.files[0]); }
+function parseCSVFile(file) { const r = new FileReader(); r.onload = e => parseCSVText(e.target.result); r.readAsText(file); }
+function parseCSVText(txt) {
+  const lines = txt.trim().split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) { toast('CSV needs a header row and at least one data row.'); return; }
+  const parseRow = row => {
+    const cols = []; let cur = '', inQ = false;
+    for (let i = 0; i < row.length; i++) {
+      const c = row[i];
+      if (c === '"') { if (inQ && row[i + 1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+      else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+      else cur += c;
     }
     cols.push(cur.trim()); return cols;
   };
-  csvHeaders=parseRow(lines[0]).map(h=>h.replace(/^"|"$/g,'').trim());
-  csvParsed=lines.slice(1).map(l=>parseRow(l));
-
-  // Core fields — always shown. expectedDate + cost are optional, appended at end.
-  const fields=['cons','sender','orig','receiver','dest','stat','pri','notes','expectedDate','cost'];
-  const aliases={
-    cons:['consignment','cons','tracking','ref','consignment no'],
-    sender:['sender','from','shipper'],
-    orig:['origin','from city','origin city','departure'],
-    receiver:['receiver','to','recipient','consignee'],
-    dest:['destination','to city','dest city','delivery'],
-    stat:['status','state'],
-    pri:['priority','urgency'],
-    notes:['notes','comments','remark'],
-    expectedDate:['expected delivery','expected date','due date','eta','delivery date'],
-    cost:['cost','freight cost','charge','amount','price']
+  csvHeaders = parseRow(lines[0]).map(h => h.replace(/^"|"$/g, '').trim());
+  csvParsed = lines.slice(1).map(l => parseRow(l));
+  const fields = ['cons', 'sender', 'orig', 'receiver', 'dest', 'stat', 'pri', 'notes', 'expectedDate', 'cost'];
+  const aliases = {
+    cons: ['consignment', 'cons', 'tracking', 'ref', 'consignment no'],
+    sender: ['sender', 'from', 'shipper'],
+    orig: ['origin', 'from city', 'origin city', 'departure'],
+    receiver: ['receiver', 'to', 'recipient', 'consignee'],
+    dest: ['destination', 'to city', 'dest city', 'delivery'],
+    stat: ['status', 'state'],
+    pri: ['priority', 'urgency'],
+    notes: ['notes', 'comments', 'remark'],
+    expectedDate: ['expected delivery', 'expected date', 'due date', 'eta', 'delivery date'],
+    cost: ['cost', 'freight cost', 'charge', 'amount', 'price']
   };
-  const fieldLabels={cons:'Consignment',sender:'Sender',orig:'Origin',receiver:'Receiver',dest:'Destination',stat:'Status',pri:'Priority',notes:'Notes',expectedDate:'Expected Delivery <span style="color:var(--t3)">(optional)</span>',cost:'Freight Cost <span style="color:var(--t3)">(optional)</span>'};
-
-  document.getElementById('importMapRows').innerHTML=fields.map(f=>{
-    const best=csvHeaders.findIndex(h=>aliases[f]?.some(a=>h.toLowerCase().includes(a)));
-    const isOptional=f==='expectedDate'||f==='cost';
+  const fieldLabels = { cons: 'Consignment', sender: 'Sender', orig: 'Origin', receiver: 'Receiver', dest: 'Destination', stat: 'Status', pri: 'Priority', notes: 'Notes', expectedDate: 'Expected Delivery <span style="color:var(--t3)">(optional)</span>', cost: 'Freight Cost <span style="color:var(--t3)">(optional)</span>' };
+  document.getElementById('importMapRows').innerHTML = fields.map(f => {
+    const best = csvHeaders.findIndex(h => aliases[f]?.some(a => h.toLowerCase().includes(a)));
+    const isOptional = f === 'expectedDate' || f === 'cost';
     return `<div class="im-row">
-      <span style="flex:1;color:${isOptional?'var(--t3)':'var(--t2)'}">${fieldLabels[f]||f}</span>
+      <span style="flex:1;color:${isOptional ? 'var(--t3)' : 'var(--t2)'}">${fieldLabels[f] || f}</span>
       <span style="color:var(--t3)">←</span>
       <select class="bulk-sel" id="map-${f}" style="min-width:160px;font-size:11px;padding:5px 8px">
         <option value="">— skip —</option>
-        ${csvHeaders.map((h,i)=>`<option value="${i}"${i===best?' selected':''}>${h}</option>`).join('')}
+        ${csvHeaders.map((h, i) => `<option value="${i}"${i === best ? ' selected' : ''}>${h}</option>`).join('')}
       </select></div>`;
   }).join('');
-  document.getElementById('prevHead').innerHTML=`<tr>${csvHeaders.map(h=>`<th>${esc(h)}</th>`).join('')}</tr>`;
-  document.getElementById('prevBody').innerHTML=csvParsed.slice(0,5).map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('');
-  document.getElementById('importPreviewWrap').style.display='block';
-  document.getElementById('doImportBtn').style.display='inline-block';
+  document.getElementById('prevHead').innerHTML = `<tr>${csvHeaders.map(h => `<th>${esc(h)}</th>`).join('')}</tr>`;
+  document.getElementById('prevBody').innerHTML = csvParsed.slice(0, 5).map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('');
+  document.getElementById('importPreviewWrap').style.display = 'block';
+  document.getElementById('doImportBtn').style.display = 'inline-block';
 }
-function getMV(f,row){ const s=document.getElementById(`map-${f}`); return s&&s.value!==''?(row[parseInt(s.value)]||'').trim():''; }
-function doImport(){
-  if(!csvParsed){toast('No CSV loaded.');return;}
-  let added=0; const log=[];
-  csvParsed.forEach((row,i)=>{
-    const cons=getMV('cons',row)||`IMP-${Date.now()}-${i}`;
-    const sender=getMV('sender',row)||'Unknown';
-    const orig=getMV('orig',row)||'Unknown';
-    const receiver=getMV('receiver',row)||'Unknown';
-    const dest=getMV('dest',row)||'Unknown';
-    const rawS=(getMV('stat',row)||'').toLowerCase().replace(/\s+/g,'-');
-    const stat=['pending','in-transit','cleared','delivered'].includes(rawS)?rawS:'pending';
-    const rawP=(getMV('pri',row)||'').toLowerCase();
-    const pri=['high','normal','low'].includes(rawP)?rawP:'normal';
-    const now=new Date().toISOString();
-    // Optional new fields — safe to omit, won't affect rows from old CSVs
-    const rawExpDate=getMV('expectedDate',row);
-    const expectedDate=rawExpDate||null;
-    const rawCost=getMV('cost',row).replace(/[^0-9.]/g,'');
-    const cost=rawCost?parseFloat(rawCost):null;
-    DB.push({id:Date.now()+i,cons,sender,orig,receiver,dest,stat,pri,
-      notes:getMV('notes',row),
+function getMV(f, row) { const s = document.getElementById(`map-${f}`); return s && s.value !== '' ? (row[parseInt(s.value)] || '').trim() : ''; }
+function doImport() {
+  if (!csvParsed) { toast('No CSV loaded.'); return; }
+  let added = 0; const log = [];
+  csvParsed.forEach((row, i) => {
+    const cons = getMV('cons', row) || `IMP-${Date.now()}-${i}`;
+    const sender = getMV('sender', row) || 'Unknown';
+    const orig = getMV('orig', row) || 'Unknown';
+    const receiver = getMV('receiver', row) || 'Unknown';
+    const dest = getMV('dest', row) || 'Unknown';
+    const rawS = (getMV('stat', row) || '').toLowerCase().replace(/\s+/g, '-');
+    const stat = ['pending', 'in-transit', 'cleared', 'delivered'].includes(rawS) ? rawS : 'pending';
+    const rawP = (getMV('pri', row) || '').toLowerCase();
+    const pri = ['high', 'normal', 'low'].includes(rawP) ? rawP : 'normal';
+    const now = new Date().toISOString();
+    const rawExpDate = getMV('expectedDate', row);
+    const expectedDate = rawExpDate || null;
+    const rawCost = getMV('cost', row).replace(/[^0-9.]/g, '');
+    const cost = rawCost ? parseFloat(rawCost) : null;
+    DB.push({ id: Date.now() + i, cons, sender, orig, receiver, dest, stat, pri,
+      notes: getMV('notes', row),
       expectedDate,
       cost,
-      date:now,
-      history:[{d:now,t:'Imported from CSV'}]
+      date: now,
+      history: [{ d: now, t: 'Imported from CSV' }]
     });
-    added++; log.push(`✓ Row ${i+2}: ${cons}${expectedDate?' · due '+expectedDate:''}${cost?' · R'+cost:''}`);
+    added++; log.push(`✓ Row ${i + 2}: ${cons}${expectedDate ? ' · due ' + expectedDate : ''}${cost ? ' · R' + cost : ''}`);
   });
   save();
-  const logEl=document.getElementById('importLog'); logEl.style.display='block'; logEl.innerHTML=log.join('<br>');
-  document.getElementById('doImportBtn').style.display='none';
-  refresh(); toast(`${added} shipment${added===1?'':'s'} imported.`);
-  setTimeout(closeImport,2200);
+  const logEl = document.getElementById('importLog'); logEl.style.display = 'block'; logEl.innerHTML = log.join('<br>');
+  document.getElementById('doImportBtn').style.display = 'none';
+  refresh(); toast(`${added} shipment${added === 1 ? '' : 's'} imported.`);
+  setTimeout(closeImport, 2200);
 }
 
 // ═══════════════════════════════════════════════
 // EXPORT
 // ═══════════════════════════════════════════════
-function doExport(){
-  const rows=getRows(); if(!rows.length){toast('Nothing to export.');return;}
-  const hdr=['Consignment','Sender','Origin','Receiver','Destination','Status','Priority','Date','Expected Delivery','Cost (ZAR)','Notes'];
-  const lines=[hdr.join(','),...rows.map(s=>[s.cons,s.sender,s.orig,s.receiver,s.dest,s.stat,s.pri,fdate(s.date),s.expectedDate||'',s.cost||'',s.notes].map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(','))];
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([lines.join('\r\n')],{type:'text/csv'}));
-  a.download=`shipments-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+function doExport() {
+  const rows = getRows(); if (!rows.length) { toast('Nothing to export.'); return; }
+  const hdr = ['Consignment', 'Sender', 'Origin', 'Receiver', 'Destination', 'Status', 'Priority', 'Date', 'Expected Delivery', 'Cost (ZAR)', 'Notes'];
+  const lines = [hdr.join(','), ...rows.map(s => [s.cons, s.sender, s.orig, s.receiver, s.dest, s.stat, s.pri, fdate(s.date), s.expectedDate || '', s.cost || '', s.notes].map(x => `"${String(x || '').replace(/"/g, '""')}"`).join(','))];
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([lines.join('\r\n')], { type: 'text/csv' }));
+  a.download = `shipments-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
   toast('CSV exported.');
-}
-
-// ═══════════════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════════════
-let authMode='login';
-function setAuthMode(mode){
-  authMode=mode;
-  document.getElementById('authTabLogin').classList.toggle('on',mode==='login');
-  document.getElementById('authTabSignup').classList.toggle('on',mode==='signup');
-  document.getElementById('authNameField').style.display=mode==='signup'?'block':'none';
-  document.getElementById('authSubmitBtn').textContent=mode==='login'?'Sign In':'Create Account';
-  document.getElementById('authErr').classList.remove('on');
-}
-
-function showAuthErr(msg){
-  const el=document.getElementById('authErr');
-  el.textContent=msg; el.classList.add('on');
-}
-
-async function submitAuth(){
-  if(!sb){
-    showAuthErr('Backend not configured — running in local-only mode. Edit SUPABASE_URL / SUPABASE_ANON_KEY in index.html to enable accounts.');
-    return;
-  }
-  const email=document.getElementById('authEmail').value.trim();
-  const password=document.getElementById('authPassword').value;
-  const fullName=document.getElementById('authName').value.trim();
-  if(!email||!password){ showAuthErr('Email and password are required.'); return; }
-  if(password.length<6){ showAuthErr('Password must be at least 6 characters.'); return; }
-
-  document.getElementById('authErr').classList.remove('on');
-  document.getElementById('authLoading').classList.add('on');
-  document.getElementById('authSubmitBtn').disabled=true;
-
-  try{
-    if(authMode==='signup'){
-      const {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name:fullName}}});
-      if(error) throw error;
-      if(!data.session){
-        showAuthErr('Account created — check your email to confirm, then sign in.');
-        setAuthMode('login');
-        return;
-      }
-    }else{
-      const {data,error}=await sb.auth.signInWithPassword({email,password});
-      if(error) throw error;
-    }
-    await onAuthSuccess();
-  }catch(e){
-    // Network / offline error — check if we have a cached session to fall back to
-    const isOffline=!navigator.onLine||e.message==='Failed to fetch'||e.name==='TypeError';
-    if(isOffline){
-      const cached=localStorage.getItem('stv5');
-      if(cached){
-        showAuthErr('You appear to be offline. Loading your locally cached data…');
-        await loadOfflineFallback();
-      }else{
-        showAuthErr('No internet connection. Connect to sign in for the first time.');
-      }
-    }else{
-      showAuthErr(e.message||'Something went wrong. Please try again.');
-    }
-  }finally{
-    document.getElementById('authLoading').classList.remove('on');
-    document.getElementById('authSubmitBtn').disabled=false;
-  }
-}
-
-async function signOut(){
-  if(sb) await sb.auth.signOut();
-  currentUser=null; currentOrgId=null;
-  DB=[]; WH=[]; geoCache={};
-  document.getElementById('appShell').classList.remove('on');
-  document.getElementById('authScreen').classList.remove('hidden');
-  document.getElementById('authEmail').value='';
-  document.getElementById('authPassword').value='';
-}
-
-async function onAuthSuccess(){
-  const {data:{user}}=await sb.auth.getUser();
-  currentUser=user;
-
-  // Fetch the user's profile to get their org_id
-  let {data:profile}=await sb.from('profiles').select('org_id,role').eq('id',user.id).maybeSingle();
-
-  // Profile may not exist yet (trigger lag) — retry briefly
-  let tries=0;
-  while(!profile&&tries<5){
-    await new Promise(r=>setTimeout(r,400));
-    ({data:profile}=await sb.from('profiles').select('org_id,role').eq('id',user.id).maybeSingle());
-    tries++;
-  }
-  if(!profile){ showAuthErr('Account setup is taking longer than expected — please refresh and try signing in again.'); return; }
-
-  currentOrgId=profile.org_id;
-  document.getElementById('userEmail').textContent=user.email;
-
-  await loadData();
-
-  document.getElementById('authScreen').classList.add('hidden');
-  document.getElementById('appShell').classList.add('on');
-
-  updateStats(); renderCharts();
-}
-
-// Load shipments + warehouse items from Supabase into DB / WH arrays,
-// converting snake_case DB columns to the camelCase fields the UI expects.
-async function loadData(){
-  try{
-    const {data:shipRows,error:shipErr}=await sb.from('shipments').select('*').eq('org_id',currentOrgId).order('created_at',{ascending:false});
-    if(shipErr) throw shipErr;
-    DB = (shipRows||[]).map(r=>({
-      id:r.id, cons:r.cons, sender:r.sender, orig:r.orig, receiver:r.receiver, dest:r.dest,
-      stat:r.stat, pri:r.pri, notes:r.notes,
-      expectedDate:r.expected_date, cost:r.cost,
-      date:r.created_at, history:r.history||[]
-    }));
-
-    const {data:whRows,error:whErr}=await sb.from('warehouse_items').select('*').eq('org_id',currentOrgId).order('created_at',{ascending:false});
-    if(whErr) throw whErr;
-    WH = (whRows||[]).map(r=>({
-      id:r.id, cons:r.cons, desc:r.desc, qty:r.qty, boxes:r.boxes, loc:r.loc, stat:r.stat,
-      shipRef:r.ship_ref, notes:r.notes, overnight:r.overnight, pickup:r.pickup,
-      date:r.created_at, log:r.log||[]
-    }));
-
-    // Brand-new org with no data yet — seed with demo data so the UI isn't empty
-    if(DB.length===0 && WH.length===0){
-      DB=seed(); WH=seedWH();
-      // Mark as "new" (id>1e12) so save() knows to INSERT rather than UPDATE
-      DB.forEach(s=>s.id=Date.now()+Math.random()*1e6+s.id);
-      WH.forEach(w=>w.id=Date.now()+Math.random()*1e6+w.id);
-      await save(); await saveWH();
-    }
-  }catch(e){
-    console.error('loadData error:',e);
-    toast('⚠ Could not load data from server — check your connection.');
-    DB=JSON.parse(localStorage.getItem('stv5')||'null')||seed();
-    WH=JSON.parse(localStorage.getItem('wh1')||'null')||seedWH();
-  }
 }
 
 // ═══════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════
-function badge(st){ return `<span class="badge b-${st}">${SLBL[st]||st}</span>`; }
-function fdate(iso){ return new Date(iso).toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'}); }
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2400); }
+function badge(st) { return `<span class="badge b-${st}">${SLBL[st] || st}</span>`; }
+function fdate(iso) { return new Date(iso).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' }); }
+function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2400); }
 
-function refresh(){
+function refresh() {
   updateStats();
-  if(activeTab==='shipments') renderTable();
-  if(activeTab==='overview') renderCharts();
-  if(activeTab==='warehouse') renderWarehouse();
-  if(activeTab==='routes') renderMap();
-  if(drawerID) openDrawer(drawerID);
+  if (activeTab === 'shipments') renderTable();
+  if (activeTab === 'overview') renderCharts();
+  if (activeTab === 'warehouse') renderWarehouse();
+  if (activeTab === 'routes') renderMap();
+  if (drawerID) openDrawer(drawerID);
 }
 
 // ═══════════════════════════════════════════════
 // KEYBOARD
 // ═══════════════════════════════════════════════
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){ cancelForm(); clearSel(); closeDrawer(); closeImport(); }
-  if(e.key==='Enter'&&formOpen&&!['BUTTON','SELECT','TEXTAREA','INPUT'].includes(document.activeElement.tagName)) addShipment();
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { cancelForm(); clearSel(); closeDrawer(); closeImport(); }
+  if (e.key === 'Enter' && formOpen && !['BUTTON', 'SELECT', 'TEXTAREA', 'INPUT'].includes(document.activeElement.tagName)) addShipment();
 });
 
-// Offline fallback — load last-cached data from localStorage and enter the app
-// without hitting Supabase. Changes made while offline are written to localStorage
-// and will sync to Supabase next time save() is called with a live connection.
-async function loadOfflineFallback(){
-  DB=JSON.parse(localStorage.getItem('stv5')||'null')||[];
-  WH=JSON.parse(localStorage.getItem('wh1')||'null')||[];
-  geoCache=JSON.parse(localStorage.getItem('geoCache5')||'{}');
-  // Try to get the stored email from the last Supabase session object
-  try{
-    const raw=Object.entries(localStorage).find(([k])=>k.startsWith('sb-')&&k.includes('-auth-token'));
-    if(raw){
-      const parsed=JSON.parse(raw[1]);
-      const email=parsed?.user?.email||'Offline';
-      document.getElementById('userEmail').textContent=email+' (offline)';
-    }else{
-      document.getElementById('userEmail').textContent='Offline mode';
+// ═══════════════════════════════════════════════
+// LOAD DATA (no auth)
+// ═══════════════════════════════════════════════
+async function loadData() {
+  try {
+    const { data: shipRows, error: shipErr } = await sb
+      .from('shipments')
+      .select('*')
+      .eq('org_id', currentOrgId)
+      .order('created_at', { ascending: false });
+    if (shipErr) throw shipErr;
+    DB = (shipRows || []).map(r => ({
+      id: r.id, cons: r.cons, sender: r.sender, orig: r.orig, receiver: r.receiver, dest: r.dest,
+      stat: r.stat, pri: r.pri, notes: r.notes,
+      expectedDate: r.expected_date, cost: r.cost,
+      date: r.created_at, history: r.history || []
+    }));
+
+    const { data: whRows, error: whErr } = await sb
+      .from('warehouse_items')
+      .select('*')
+      .eq('org_id', currentOrgId)
+      .order('created_at', { ascending: false });
+    if (whErr) throw whErr;
+    WH = (whRows || []).map(r => ({
+      id: r.id, cons: r.cons, desc: r.desc, qty: r.qty, boxes: r.boxes, loc: r.loc, stat: r.stat,
+      shipRef: r.ship_ref, notes: r.notes, overnight: r.overnight, pickup: r.pickup,
+      date: r.created_at, log: r.log || []
+    }));
+
+    if (DB.length === 0 && WH.length === 0) {
+      DB = seed();
+      WH = seedWH();
+      DB.forEach(s => s.id = Date.now() + Math.random() * 1e6 + s.id);
+      WH.forEach(w => w.id = Date.now() + Math.random() * 1e6 + w.id);
+      await save();
+      await saveWH();
     }
-  }catch{ document.getElementById('userEmail').textContent='Offline mode'; }
-  document.getElementById('authScreen').classList.add('hidden');
-  document.getElementById('appShell').classList.add('on');
-  toast('Offline — showing cached data. Changes will sync when reconnected.');
-  updateStats(); renderCharts();
+  } catch (e) {
+    console.error('loadData error:', e);
+    toast('⚠ Could not load data — check your connection.');
+    DB = JSON.parse(localStorage.getItem('stv5') || 'null') || seed();
+    WH = JSON.parse(localStorage.getItem('wh1') || 'null') || seedWH();
+  }
 }
 
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
-window.addEventListener('load',async ()=>{
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
-  }
-
-  if(!sb){
-    // No backend configured — run fully local, skip login
-    DB=JSON.parse(localStorage.getItem('stv5')||'null')||seed();
-    WH=JSON.parse(localStorage.getItem('wh1')||'null')||seedWH();
-    geoCache=JSON.parse(localStorage.getItem('geoCache5')||'{}');
-    document.getElementById('authScreen').classList.add('hidden');
-    document.getElementById('appShell').classList.add('on');
-    document.getElementById('userEmail').textContent='Local mode';
-    updateStats(); renderCharts();
-    return;
-  }
-
-  // If offline but we have cached data + a stored session token → skip auth screen
-  if(!navigator.onLine){
-    const hasCache=!!localStorage.getItem('stv5');
-    const hasSession=Object.keys(localStorage).some(k=>k.startsWith('sb-')&&k.includes('-auth-token'));
-    if(hasCache&&hasSession){
-      await loadOfflineFallback();
-      return;
-    }
-    // No cache — show login with offline message
-    showAuthErr('You are offline. Connect to the internet to sign in.');
-    return;
-  }
-
-  // Online — check for existing Supabase session
-  try{
-    const {data:{session}}=await sb.auth.getSession();
-    if(session){
-      await onAuthSuccess();
-    }
-  }catch(e){
-    // getSession itself failed (network blip at load time) — try local cache
-    if(localStorage.getItem('stv5')) await loadOfflineFallback();
-  }
-
-  // Keep UI in sync with auth state changes
-  sb.auth.onAuthStateChange((event,session)=>{
-    if(event==='SIGNED_OUT'){
-      document.getElementById('appShell').classList.remove('on');
-      document.getElementById('authScreen').classList.remove('hidden');
-    }
-    // When connection restored and token refreshed, re-sync data
-    if(event==='TOKEN_REFRESHED'&&currentOrgId){
-      loadData().then(()=>refresh()).catch(()=>{});
-    }
-  });
-
-  // When device comes back online, sync any offline changes
-  window.addEventListener('online',async ()=>{
-    if(currentOrgId){
-      toast('Back online — syncing…');
-      await save(); await saveWH();
-      await loadData();
-      refresh();
-      toast('Synced.');
-    }
-  });
+window.addEventListener('load', async () => {
+  // No auth — load data directly
+  DB = JSON.parse(localStorage.getItem('stv5') || 'null') || [];
+  WH = JSON.parse(localStorage.getItem('wh1') || 'null') || [];
+  geoCache = JSON.parse(localStorage.getItem('geoCache5') || '{}');
+  document.getElementById('appShell').classList.add('on');
+  document.getElementById('userEmail').textContent = 'Team workspace';
+  await loadData();
+  updateStats();
+  renderCharts();
 });
 </script>
 </body>
