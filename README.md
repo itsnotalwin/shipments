@@ -2,7 +2,7 @@
 
 A shipment & warehouse tracking app built as a single-page PWA.
 Deployable to GitHub Pages in minutes. Backed by Supabase (free tier)
-for multi-user logins, shared data, and automatic backups.
+for multi-user logins, shared data, and automaticbackups.
 
 ---
 
